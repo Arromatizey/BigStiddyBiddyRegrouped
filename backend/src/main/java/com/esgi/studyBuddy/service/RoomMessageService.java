@@ -7,6 +7,7 @@ import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.RoomMessageRepository;
 import com.esgi.studyBuddy.repository.RoomRepository;
 import com.esgi.studyBuddy.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -58,4 +59,9 @@ public class RoomMessageService {
         kafkaTemplate.send("ai-message-events", event);
         log.info("Sent message to AI for processing: {}", event);
     }
+    @Transactional
+    public void deleteMessagesByRoomId(UUID roomId) {
+        messageRepository.deleteByRoom_Id(roomId);
+    }
+
 }

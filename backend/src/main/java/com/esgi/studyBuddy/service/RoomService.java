@@ -163,5 +163,12 @@ public class RoomService {
 
         messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/timer", buildTimerPayload(room));
     }
+    @Transactional
+    public void deleteRoomById(UUID roomId) {
+        Room room = roomRepository.findById(roomId).orElseThrow();
+        roomRepository.delete(room);
+        log.info("Room with ID {} deleted successfully", roomId);
 
+        // Optionally, notify members about the deletion
+    }
 }

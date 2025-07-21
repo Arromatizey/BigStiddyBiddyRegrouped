@@ -7,6 +7,7 @@ import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.UserRepository;
 import com.esgi.studyBuddy.service.RoomMessageService;
 import com.esgi.studyBuddy.service.RoomService;
+import com.esgi.studyBuddy.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -22,6 +23,7 @@ public class RoomTestRunner implements CommandLineRunner {
     private final UserRepository userRepository;
     private final RoomMessageService roomMessageService;
     private final KafkaTemplate<String, AiResponseEvent> kafkaTemplate;
+    private final UserService userService;
 
     @Override
     public void run(String... args) throws InterruptedException {
@@ -61,9 +63,18 @@ public class RoomTestRunner implements CommandLineRunner {
         roomService.resetPomodoroTimer(roomId);
         System.out.println("🔁 Timer reset.");
 
-        // ✅ Simulate AI sending a response (to test Kafka listener)
+        // Simulate AI sending a response (to test Kafka listener)
         AiResponseEvent aiResponse = new AiResponseEvent(roomId, "The quadratic formula is x = (-b ± √(b²-4ac)) / 2a.");
         kafkaTemplate.send("ai-response-events", aiResponse);
         System.out.println("📤 Simulated AI response sent to Kafka.");
-    }
-}
+
+
+        Thread.sleep(4000);
+
+        // 🧹 Cleanup
+        roomMessageService.deleteMessagesByRoomId(roomId); // à implémenter si elle n'existe pas
+        roomService.deleteRoomById(roomId);                // idem
+        userRepository.deleteById(user.getId());
+        userService.deleteUserByEmail("ai@studybuddy.com");
+        System.out.println("🧽 Test data cleaned up.");
+    }}
