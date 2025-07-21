@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,6 +33,10 @@ public class RoomService {
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final String AI_EMAIL = "ai@studybuddy.com";
+
+    public List<Room> getAllRooms(){
+        return roomRepository.findAll();
+    }
 
     @Transactional
     public UUID createRoom(Room room) {

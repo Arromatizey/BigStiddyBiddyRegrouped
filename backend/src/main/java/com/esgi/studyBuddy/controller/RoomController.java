@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -14,6 +15,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RoomController {
     private final RoomService roomService;
+
+    @GetMapping("/getAllRooms")
+    public List<Room> getAllRooms(){
+        return roomService.getAllRooms();
+    }
 
     @PostMapping
     public ResponseEntity<UUID> createRoom(@RequestBody Room room) {
