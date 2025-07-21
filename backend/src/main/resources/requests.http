@@ -1,0 +1,52 @@
+### Register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "anis2@example.com",
+  "password": "strongPassword123",
+  "displayName": "Anis"
+}
+
+### Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "anis@example.com",
+  "password": "strongPassword123"
+}
+### Get all User
+GET http://localhost:8080/api/users
+
+### Forgot Password - request token
+POST http://localhost:8080/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "anis@example.com"
+}
+
+
+
+### Reset password (copy the token printed in console below)
+POST http://localhost:8080/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "2e92d7b7-7f0c-4f54-b31b-43729ff3f615",
+  "newPassword": "newStrongPassword456"
+}
+
+###
+
+### Try to login again with new password
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "anis@example.com",
+  "password": "newStrongPassword456"
+}
+
+###
