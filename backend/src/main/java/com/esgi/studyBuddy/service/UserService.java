@@ -3,6 +3,7 @@ package com.esgi.studyBuddy.service;
 import com.esgi.studyBuddy.DTO.UserUpdateRequest;
 import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,11 @@ public class UserService {
 
     public void deleteUser(UUID id) {
         userRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteUserByEmail(String email) {
+        userRepository.deleteUserByEmail(email);
     }
 
     public User findByEmail(String email) {

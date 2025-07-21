@@ -9,4 +9,6 @@ import java.util.UUID;
 
 public interface RoomMessageRepository extends JpaRepository<RoomMessage, UUID> {
     List<RoomMessage> findTop50ByRoom_IdOrderByCreatedAtDesc(UUID roomId);
+
+    void deleteByRoom_Id(UUID roomId);
 }
