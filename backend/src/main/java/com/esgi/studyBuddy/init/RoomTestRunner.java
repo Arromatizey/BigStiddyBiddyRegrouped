@@ -27,7 +27,6 @@ public class RoomTestRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws InterruptedException {
-        // 👤 Create test user
         User user = new User();
         user.setEmail("owner@example.com");
         user.setPassword("dummy");
@@ -35,7 +34,6 @@ public class RoomTestRunner implements CommandLineRunner {
         user.setVerified(true);
         user = userRepository.save(user);
 
-        // 🏠 Create test room
         Room room = Room.builder()
                 .owner(user)
                 .subject("Math")
@@ -46,7 +44,6 @@ public class RoomTestRunner implements CommandLineRunner {
         UUID roomId = roomService.createRoom(room);
         System.out.println("✅ Room created successfully.");
 
-        // 💬 Simulate conversation
         List<String> conversation = List.of(
                 "Hi, what are we studying today?",
                 "Can someone explain what a variable is?",
@@ -68,7 +65,6 @@ public class RoomTestRunner implements CommandLineRunner {
             Thread.sleep(300); // simulate delay between messages
         }
 
-        // ⏱️ Simulate timer flow
         roomService.startPomodoroTimer(roomId);
         System.out.println("⏱️ Timer started.");
         Thread.sleep(1000);
@@ -81,18 +77,17 @@ public class RoomTestRunner implements CommandLineRunner {
         roomService.resetPomodoroTimer(roomId);
         System.out.println("🔁 Timer reset.");
 
-        // 📤 Simulate AI sending response (Kafka -> listener)
         AiResponseEvent aiResponse = new AiResponseEvent(roomId, "The quadratic formula is x = (-b ± √(b²-4ac)) / 2a.");
         kafkaTemplate.send("ai-response-events", aiResponse);
         System.out.println("📤 Simulated AI response sent to Kafka.");
 
-        Thread.sleep(4000); // allow time for Kafka listener to process
+        Thread.sleep(4000);
 
         // 🧽 Cleanup test data
         roomMessageService.deleteMessagesByRoomId(roomId);
         roomService.deleteRoomById(roomId);
         userRepository.deleteById(user.getId());
-        userService.deleteUserByEmail("ai@studybuddy.com"); // optional: cleanup dummy AI user if exists
+        userService.deleteUserByEmail("ai@studybuddy.com");
         System.out.println("🧽 Test data cleaned up.");
     }
 }

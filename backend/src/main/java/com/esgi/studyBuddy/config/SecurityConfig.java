@@ -29,10 +29,11 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+                .cors(cors -> {}) // ✅ Active CORS ici
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/auth/**", "/swagger-ui/**",
-                                    "/v3/api-docs/**").permitAll()
+                    auth.requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                             .requestMatchers("/chat/**").permitAll()
                             .requestMatchers("/topic/**", "/app/**").permitAll();
                     auth.anyRequest().authenticated();
@@ -43,7 +44,6 @@ public class SecurityConfig {
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
     // ✅ Bean PasswordEncoder
     @Bean
     public PasswordEncoder passwordEncoder() {

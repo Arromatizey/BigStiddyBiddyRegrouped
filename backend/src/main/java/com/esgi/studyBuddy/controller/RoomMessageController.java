@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/messages")
+@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class RoomMessageController {
 
