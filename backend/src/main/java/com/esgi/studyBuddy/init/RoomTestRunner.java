@@ -1,6 +1,5 @@
 package com.esgi.studyBuddy.init;
 
-import com.esgi.studyBuddy.DTO.AiMessageEvent;
 import com.esgi.studyBuddy.DTO.AiResponseEvent;
 import com.esgi.studyBuddy.model.Room;
 import com.esgi.studyBuddy.model.User;
@@ -13,6 +12,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -27,6 +27,7 @@ public class RoomTestRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws InterruptedException {
+        // 👤 Create test user
         User user = new User();
         user.setEmail("owner@example.com");
         user.setPassword("dummy");
@@ -34,6 +35,7 @@ public class RoomTestRunner implements CommandLineRunner {
         user.setVerified(true);
         user = userRepository.save(user);
 
+        // 🏠 Create test room
         Room room = Room.builder()
                 .owner(user)
                 .subject("Math")
@@ -44,13 +46,29 @@ public class RoomTestRunner implements CommandLineRunner {
         UUID roomId = roomService.createRoom(room);
         System.out.println("✅ Room created successfully.");
 
-        // Post regular & AI-triggered messages
-        roomMessageService.saveMessage(roomId, user.getId(), "This is a regular message.");
-        System.out.println("💬 Regular message posted.");
-        roomMessageService.saveMessageAndNotifyAI(roomId, user.getId(), "What is the quadratic formula?");
-        System.out.println("🤖 AI-triggered message posted.");
+        // 💬 Simulate conversation
+        List<String> conversation = List.of(
+                "Hi, what are we studying today?",
+                "Can someone explain what a variable is?",
+                "I heard about quadratic equations, what are they?",
+                "How do you solve them?",
+                "What is the quadratic formula?"
+        );
 
-        // Simulate timer flow
+        for (int i = 0; i < conversation.size(); i++) {
+            String msg = conversation.get(i);
+            if (i == conversation.size() - 1) {
+                // Last message triggers AI
+                roomMessageService.saveMessageAndNotifyAI(roomId, user.getId(), msg);
+                System.out.println("🤖 AI-triggered message posted: " + msg);
+            } else {
+                roomMessageService.saveMessage(roomId, user.getId(), msg);
+                System.out.println("💬 Message posted: " + msg);
+            }
+            Thread.sleep(300); // simulate delay between messages
+        }
+
+        // ⏱️ Simulate timer flow
         roomService.startPomodoroTimer(roomId);
         System.out.println("⏱️ Timer started.");
         Thread.sleep(1000);
@@ -63,18 +81,18 @@ public class RoomTestRunner implements CommandLineRunner {
         roomService.resetPomodoroTimer(roomId);
         System.out.println("🔁 Timer reset.");
 
-        // Simulate AI sending a response (to test Kafka listener)
+        // 📤 Simulate AI sending response (Kafka -> listener)
         AiResponseEvent aiResponse = new AiResponseEvent(roomId, "The quadratic formula is x = (-b ± √(b²-4ac)) / 2a.");
         kafkaTemplate.send("ai-response-events", aiResponse);
         System.out.println("📤 Simulated AI response sent to Kafka.");
 
+        Thread.sleep(4000); // allow time for Kafka listener to process
 
-        Thread.sleep(4000);
-
-        // 🧹 Cleanup
-        roomMessageService.deleteMessagesByRoomId(roomId); // à implémenter si elle n'existe pas
-        roomService.deleteRoomById(roomId);                // idem
+        // 🧽 Cleanup test data
+        roomMessageService.deleteMessagesByRoomId(roomId);
+        roomService.deleteRoomById(roomId);
         userRepository.deleteById(user.getId());
-        userService.deleteUserByEmail("ai@studybuddy.com");
+        userService.deleteUserByEmail("ai@studybuddy.com"); // optional: cleanup dummy AI user if exists
         System.out.println("🧽 Test data cleaned up.");
-    }}
+    }
+}

@@ -46,7 +46,7 @@ public class RoomMessageService {
         User user = userRepository.findById(userId).orElseThrow();
         Room room = roomRepository.findById(roomId).orElseThrow();
 
-        // Save message to DB
+        // 📝 Save new message to DB
         RoomMessage message = RoomMessage.builder()
                 .user(user)
                 .room(room)
@@ -54,10 +54,17 @@ public class RoomMessageService {
                 .build();
         messageRepository.save(message);
 
-        // Publish Kafka event
-        AiMessageEvent event = new AiMessageEvent(roomId, userId, content);
+        // 📜 Get conversation context
+        List<RoomMessage> previousMessages = messageRepository.findTop50ByRoom_IdOrderByCreatedAtDesc(roomId);
+        List<String> context = previousMessages.stream()
+                .sorted((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt())) // Optional: restore chronological order
+                .map(m -> m.getUser().getDisplayName() + ": " + m.getMessage())
+                .toList();
+
+        // 📤 Publish Kafka event
+        AiMessageEvent event = new AiMessageEvent(roomId, userId, content, context);
         kafkaTemplate.send("ai-message-events", event);
-        log.info("Sent message to AI for processing: {}", event);
+        log.info("Sent message to AI with context: {}", event);
     }
     @Transactional
     public void deleteMessagesByRoomId(UUID roomId) {
