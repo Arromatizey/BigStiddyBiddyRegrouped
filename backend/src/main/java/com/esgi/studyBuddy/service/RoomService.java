@@ -2,6 +2,7 @@ package com.esgi.studyBuddy.service;
 
 import ch.qos.logback.classic.Logger;
 import com.esgi.studyBuddy.DTO.RoomDurationUpdateRequest;
+import com.esgi.studyBuddy.DTO.RoomMemberResponse;
 import com.esgi.studyBuddy.model.*;
 import com.esgi.studyBuddy.repository.RoomMemberRepository;
 import com.esgi.studyBuddy.repository.RoomRepository;
@@ -37,6 +38,27 @@ public class RoomService {
     public List<Room> getAllRooms(){
         return roomRepository.findAll();
     }
+    @Transactional
+    public Room getRoomById(UUID roomId) {
+        return roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+    }
+    @Transactional
+    public List<RoomMemberResponse> getRoomMembers(UUID roomId) {
+        if (!roomRepository.existsById(roomId)) {
+            throw new RuntimeException("Room not found");
+        }
+
+        return roomMemberRepository.findAllByRoomId(roomId).stream()
+                .map(member -> new RoomMemberResponse(
+                        member.getUser().getId(),
+                        member.getUser().getDisplayName(),
+                        member.getUser().getEmail(),
+                        member.getRole()
+                ))
+                .toList();
+    }
+
 
     @Transactional
     public UUID createRoom(Room room) {

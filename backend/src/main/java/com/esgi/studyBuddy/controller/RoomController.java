@@ -1,7 +1,9 @@
 package com.esgi.studyBuddy.controller;
 
 import com.esgi.studyBuddy.DTO.RoomDurationUpdateRequest;
+import com.esgi.studyBuddy.DTO.RoomMemberResponse;
 import com.esgi.studyBuddy.model.Room;
+import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +23,19 @@ public class RoomController {
     public List<Room> getAllRooms(){
         return roomService.getAllRooms();
     }
-
+    @GetMapping("/{id}")
+    public ResponseEntity<Room> getRoomById(@PathVariable UUID id) {
+        Room room = roomService.getRoomById(id);
+        return ResponseEntity.ok(room);
+    }
     @PostMapping
     public ResponseEntity<UUID> createRoom(@RequestBody Room room) {
         UUID id = roomService.createRoom(room);
         return ResponseEntity.ok(id);
+    }
+    @GetMapping("/{id}/members")
+    public ResponseEntity<List<RoomMemberResponse>> getRoomMembers(@PathVariable UUID id) {
+        return ResponseEntity.ok(roomService.getRoomMembers(id));
     }
 
     @PatchMapping("/{id}/theme")

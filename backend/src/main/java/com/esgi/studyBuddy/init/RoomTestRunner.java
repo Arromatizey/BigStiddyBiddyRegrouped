@@ -1,6 +1,7 @@
 package com.esgi.studyBuddy.init;
 
 import com.esgi.studyBuddy.DTO.AiResponseEvent;
+import com.esgi.studyBuddy.DTO.RoomMemberResponse;
 import com.esgi.studyBuddy.model.Room;
 import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.UserRepository;
@@ -27,6 +28,7 @@ public class RoomTestRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws InterruptedException {
+        // 👤 Créer un utilisateur
         User user = new User();
         user.setEmail("owner@example.com");
         user.setPassword("dummy");
@@ -34,6 +36,7 @@ public class RoomTestRunner implements CommandLineRunner {
         user.setVerified(true);
         user = userRepository.save(user);
 
+        // 🏠 Créer une room
         Room room = Room.builder()
                 .owner(user)
                 .subject("Math")
@@ -42,8 +45,9 @@ public class RoomTestRunner implements CommandLineRunner {
                 .build();
 
         UUID roomId = roomService.createRoom(room);
-        System.out.println("✅ Room created successfully.");
+        System.out.println("✅ Room created successfully with ID: " + roomId);
 
+        // 💬 Simulation d'une conversation
         List<String> conversation = List.of(
                 "Hi, what are we studying today?",
                 "Can someone explain what a variable is?",
@@ -55,16 +59,16 @@ public class RoomTestRunner implements CommandLineRunner {
         for (int i = 0; i < conversation.size(); i++) {
             String msg = conversation.get(i);
             if (i == conversation.size() - 1) {
-                // Last message triggers AI
                 roomMessageService.saveMessageAndNotifyAI(roomId, user.getId(), msg);
                 System.out.println("🤖 AI-triggered message posted: " + msg);
             } else {
                 roomMessageService.saveMessage(roomId, user.getId(), msg);
                 System.out.println("💬 Message posted: " + msg);
             }
-            Thread.sleep(300); // simulate delay between messages
+            Thread.sleep(300);
         }
 
+        // ⏱️ Tester le timer Pomodoro
         roomService.startPomodoroTimer(roomId);
         System.out.println("⏱️ Timer started.");
         Thread.sleep(1000);
@@ -77,9 +81,24 @@ public class RoomTestRunner implements CommandLineRunner {
         roomService.resetPomodoroTimer(roomId);
         System.out.println("🔁 Timer reset.");
 
+        // 🧠 Simulation d'une réponse IA
         AiResponseEvent aiResponse = new AiResponseEvent(roomId, "The quadratic formula is x = (-b ± √(b²-4ac)) / 2a.");
         kafkaTemplate.send("ai-response-events", aiResponse);
         System.out.println("📤 Simulated AI response sent to Kafka.");
+
+        // 🔍 TEST getRoomById
+        Room fetchedRoom = roomService.getRoomById(roomId);
+        System.out.println("📦 Room fetched by ID:");
+        System.out.println("   Subject: " + fetchedRoom.getSubject());
+        System.out.println("   Topic: " + fetchedRoom.getTopic());
+        System.out.println("   Created at: " + fetchedRoom.getCreatedAt());
+
+        // 👥 TEST getRoomMembers
+        List<RoomMemberResponse> members = roomService.getRoomMembers(roomId);
+        System.out.println("👥 Room members:");
+        for (RoomMemberResponse member : members) {
+            System.out.println(" - " + member.getDisplayName() + " (" + member.getEmail() + ") - Role: " + member.getRole());
+        }
 
         Thread.sleep(4000);
 
