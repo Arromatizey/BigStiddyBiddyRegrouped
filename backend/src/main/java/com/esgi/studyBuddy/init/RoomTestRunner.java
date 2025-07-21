@@ -1,11 +1,15 @@
 package com.esgi.studyBuddy.init;
 
-import com.esgi.studyBuddy.model.*;
+import com.esgi.studyBuddy.DTO.AiMessageEvent;
+import com.esgi.studyBuddy.DTO.AiResponseEvent;
+import com.esgi.studyBuddy.model.Room;
+import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.UserRepository;
 import com.esgi.studyBuddy.service.RoomMessageService;
 import com.esgi.studyBuddy.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -17,6 +21,7 @@ public class RoomTestRunner implements CommandLineRunner {
     private final RoomService roomService;
     private final UserRepository userRepository;
     private final RoomMessageService roomMessageService;
+    private final KafkaTemplate<String, AiResponseEvent> kafkaTemplate;
 
     @Override
     public void run(String... args) throws InterruptedException {
@@ -35,30 +40,30 @@ public class RoomTestRunner implements CommandLineRunner {
                 .build();
 
         UUID roomId = roomService.createRoom(room);
-        System.out.println("Room created successfully.");
+        System.out.println("✅ Room created successfully.");
 
-        // Post messages
+        // Post regular & AI-triggered messages
         roomMessageService.saveMessage(roomId, user.getId(), "This is a regular message.");
-        System.out.println("Regular message posted.");
+        System.out.println("💬 Regular message posted.");
         roomMessageService.saveMessageAndNotifyAI(roomId, user.getId(), "What is the quadratic formula?");
-        System.out.println("AI-triggered message posted.");
+        System.out.println("🤖 AI-triggered message posted.");
 
-        // Timer logic
+        // Simulate timer flow
         roomService.startPomodoroTimer(roomId);
-        System.out.println("Timer started.");
-
-        Thread.sleep(2000); // simulate wait time
-
+        System.out.println("⏱️ Timer started.");
+        Thread.sleep(1000);
         roomService.pausePomodoroTimer(roomId);
-        System.out.println("Timer paused.");
-
+        System.out.println("⏸️ Timer paused.");
+        Thread.sleep(1000);
         roomService.resumePomodoroTimer(roomId);
-        System.out.println("Timer resumed.");
-
+        System.out.println("▶️ Timer resumed.");
+        Thread.sleep(1000);
         roomService.resetPomodoroTimer(roomId);
-        System.out.println("Timer reset.");
+        System.out.println("🔁 Timer reset.");
 
+        // ✅ Simulate AI sending a response (to test Kafka listener)
+        AiResponseEvent aiResponse = new AiResponseEvent(roomId, "The quadratic formula is x = (-b ± √(b²-4ac)) / 2a.");
+        kafkaTemplate.send("ai-response-events", aiResponse);
+        System.out.println("📤 Simulated AI response sent to Kafka.");
     }
-
 }
-
