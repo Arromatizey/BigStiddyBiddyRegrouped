@@ -31,7 +31,7 @@ public class RoomMessage {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
+    @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
     @CreationTimestamp
