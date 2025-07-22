@@ -1,7 +1,6 @@
 package com.esgi.studyBuddy.init;
 
 import com.esgi.studyBuddy.DTO.AiResponseEvent;
-import com.esgi.studyBuddy.DTO.RoomMemberResponse;
 import com.esgi.studyBuddy.model.Room;
 import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.UserRepository;
@@ -13,7 +12,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -28,7 +26,7 @@ public class RoomTestRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws InterruptedException {
-        // 👤 Créer un utilisateur
+        // 👤 Create a test user
         User user = new User();
         user.setEmail("owner@example.com");
         user.setPassword("dummy");
@@ -36,77 +34,58 @@ public class RoomTestRunner implements CommandLineRunner {
         user.setVerified(true);
         user = userRepository.save(user);
 
-        // 🏠 Créer une room
+        System.out.println("\n✅✅✅ USER CREATED: Paste this User ID in your front:");
+        System.out.println("➡️  User ID: " + user.getId() + "\n");
+
+        // 🏠 Create a test room
         Room room = Room.builder()
                 .owner(user)
-                .subject("Math")
-                .level("Beginner")
-                .topic("Algebra")
+                .subject("Pomodoro Test")
+                .level("Any")
+                .topic("Testing")
                 .build();
 
         UUID roomId = roomService.createRoom(room);
-        System.out.println("✅ Room created successfully with ID: " + roomId);
 
-        // 💬 Simulation d'une conversation
-        List<String> conversation = List.of(
-                "Hi, what are we studying today?",
-                "Can someone explain what a variable is?",
-                "I heard about quadratic equations, what are they?",
-                "How do you solve them?",
-                "What is the quadratic formula?"
-        );
+        System.out.println("\n✅✅✅ ROOM CREATED: Paste this Room ID in your front:");
+        System.out.println("➡️  Room ID: " + roomId + "\n");
 
-        for (int i = 0; i < conversation.size(); i++) {
-            String msg = conversation.get(i);
-            if (i == conversation.size() - 1) {
-                roomMessageService.saveMessageAndNotifyAI(roomId, user.getId(), msg);
-                System.out.println("🤖 AI-triggered message posted: " + msg);
-            } else {
-                roomMessageService.saveMessage(roomId, user.getId(), msg);
-                System.out.println("💬 Message posted: " + msg);
-            }
-            Thread.sleep(300);
-        }
+        Thread.sleep(15000);
 
-        // ⏱️ Tester le timer Pomodoro
+        // Send some test messages via RoomMessageService
+        System.out.println("💬 Sending some test messages...");
+
+        roomMessageService.saveMessage(roomId, user.getId(), "Hello everyone!");
+        Thread.sleep(500);
+
+        roomMessageService.saveMessage(roomId, user.getId(), "This is a normal message.");
+        Thread.sleep(500);
+
+        roomMessageService.saveMessageAndNotifyAI(roomId, user.getId(), "Hey AI, can you help me?");
+        Thread.sleep(500);
+
+        roomMessageService.saveMessage(roomId, user.getId(), "Let's test the chat functionality.");
+        Thread.sleep(500);
+
+
+        System.out.println("💬 Test messages sent!\n");
+
+        // ⏱️ Trigger timer events that push WebSocket messages
+        System.out.println("🟢 Starting Pomodoro Timer...");
         roomService.startPomodoroTimer(roomId);
-        System.out.println("⏱️ Timer started.");
         Thread.sleep(1000);
+
+        System.out.println("⏸️ Pausing Pomodoro Timer...");
         roomService.pausePomodoroTimer(roomId);
-        System.out.println("⏸️ Timer paused.");
         Thread.sleep(1000);
+
+        System.out.println("▶️ Resuming Pomodoro Timer...");
         roomService.resumePomodoroTimer(roomId);
-        System.out.println("▶️ Timer resumed.");
         Thread.sleep(1000);
+
+        System.out.println("🔁 Resetting Pomodoro Timer...");
         roomService.resetPomodoroTimer(roomId);
-        System.out.println("🔁 Timer reset.");
 
-        // 🧠 Simulation d'une réponse IA
-        AiResponseEvent aiResponse = new AiResponseEvent(roomId, "The quadratic formula is x = (-b ± √(b²-4ac)) / 2a.");
-        kafkaTemplate.send("ai-response-events", aiResponse);
-        System.out.println("📤 Simulated AI response sent to Kafka.");
-
-        // 🔍 TEST getRoomById
-        Room fetchedRoom = roomService.getRoomById(roomId);
-        System.out.println("📦 Room fetched by ID:");
-        System.out.println("   Subject: " + fetchedRoom.getSubject());
-        System.out.println("   Topic: " + fetchedRoom.getTopic());
-        System.out.println("   Created at: " + fetchedRoom.getCreatedAt());
-
-        // 👥 TEST getRoomMembers
-        List<RoomMemberResponse> members = roomService.getRoomMembers(roomId);
-        System.out.println("👥 Room members:");
-        for (RoomMemberResponse member : members) {
-            System.out.println(" - " + member.getDisplayName() + " (" + member.getEmail() + ") - Role: " + member.getRole());
-        }
-
-        Thread.sleep(4000);
-
-        // 🧽 Cleanup test data
-        roomMessageService.deleteMessagesByRoomId(roomId);
-        roomService.deleteRoomById(roomId);
-        userRepository.deleteById(user.getId());
-        userService.deleteUserByEmail("ai@studybuddy.com");
-        System.out.println("🧽 Test data cleaned up.");
+        System.out.println("✅ Done! Open your test front and paste the Room ID and User ID to test chat and WebSocket events.\n");
     }
 }

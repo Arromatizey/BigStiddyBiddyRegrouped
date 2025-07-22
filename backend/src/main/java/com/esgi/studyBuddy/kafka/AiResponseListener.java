@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,6 +23,7 @@ public class AiResponseListener {
     private final UserRepository userRepository;
     private final RoomMessageRepository roomMessageRepository;
     private final ObjectMapper objectMapper; // Injected for JSON deserialization
+    private final SimpMessagingTemplate messagingTemplate;
 
     private static final String AI_USER_EMAIL = "ai@studybuddy.com";
 
@@ -49,6 +51,8 @@ public class AiResponseListener {
                     .build();
 
             roomMessageRepository.save(aiMessage);
+            messagingTemplate.convertAndSend("/topic/rooms/" + event.roomId() + "/messages", message);
+            log.info("Broadcasted message: {}", message);
             log.info("Saved AI message to DB.");
         } catch (Exception e) {
             log.error("Failed to process AI response message: {}", message, e);

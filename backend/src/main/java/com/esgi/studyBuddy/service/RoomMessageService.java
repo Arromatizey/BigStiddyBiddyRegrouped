@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class RoomMessageService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final KafkaTemplate<String, AiMessageEvent> kafkaTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public List<RoomMessage> getLastMessages(UUID roomId) {
         return messageRepository.findTop50ByRoom_IdOrderByCreatedAtDesc(roomId);
@@ -41,6 +43,9 @@ public class RoomMessageService {
                 .build();
 
         messageRepository.save(message);
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/messages", message);
+        log.info("Broadcasted message: {}", message);
+
     }
     public void saveMessageAndNotifyAI(UUID roomId, UUID userId, String content) {
         User user = userRepository.findById(userId).orElseThrow();
@@ -65,6 +70,8 @@ public class RoomMessageService {
         AiMessageEvent event = new AiMessageEvent(roomId, userId, content, context);
         kafkaTemplate.send("ai-message-events", event);
         log.info("Sent message to AI with context: {}", event);
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/messages", message);
+        log.info("Broadcasted message: {}", message);
     }
     @Transactional
     public void deleteMessagesByRoomId(UUID roomId) {
