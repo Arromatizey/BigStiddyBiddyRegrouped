@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ChatService } from '../chat.service';
@@ -8,7 +8,8 @@ import { Room, RoomMessage, PostRoomMessageRequest } from '../../shared/models/r
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css'
+  styleUrl: './chat.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   @Input() room!: Room;
@@ -25,7 +26,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   constructor(
     private chatService: ChatService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -74,8 +77,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.messages$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(message => {
-      this.messages.push(message);
-      this.shouldScrollToBottom = true;
+      console.log('💬 New message received in chat component:', message);
+      this.ngZone.run(() => {
+        this.messages.push(message);
+        this.shouldScrollToBottom = true;
+        this.cdr.detectChanges();
+      });
     });
   }
 
@@ -89,7 +96,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     
     const request: PostRoomMessageRequest = {
       userId: this.currentUserId,
-      message: isAIMessage ? message.substring(4) : message
+      message: isAIMessage ? message.substring(0) : message
     };
 
     this.sendingMessage = true;

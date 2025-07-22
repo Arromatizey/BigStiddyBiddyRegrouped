@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-@Component
+// @Component - Désactivé pour éviter les conflits de données de test
 @RequiredArgsConstructor
 public class RoomTestRunner implements CommandLineRunner {
 
@@ -28,13 +28,16 @@ public class RoomTestRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws InterruptedException {
-        // 👤 Créer un utilisateur
-        User user = new User();
-        user.setEmail("owner@example.com");
-        user.setPassword("dummy");
-        user.setDisplayName("Owner");
-        user.setVerified(true);
-        user = userRepository.save(user);
+        // 👤 Créer ou récupérer un utilisateur
+        User user = userRepository.findByEmail("owner@example.com")
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setEmail("owner@example.com");
+                    newUser.setPassword("dummy");
+                    newUser.setDisplayName("Owner");
+                    newUser.setVerified(true);
+                    return userRepository.save(newUser);
+                });
 
         // 🏠 Créer une room
         Room room = Room.builder()

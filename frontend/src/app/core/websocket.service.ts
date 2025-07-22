@@ -13,34 +13,49 @@ export class WebSocketService {
   private subscriptions: Map<string, StompSubscription> = new Map();
 
   constructor() {
+    console.log('🔌 Initializing WebSocketService...');
     this.client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/chat') as any,
-      debug: (str) => {
-        console.log('STOMP: ' + str);
+      webSocketFactory: () => {
+        console.log('🏭 Creating SockJS WebSocket factory...');
+        return new SockJS('http://localhost:8080/chat') as any;
       },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+      debug: (str) => {
+        // Réduire les logs STOMP pour moins de bruit
+        if (str.includes('>>> CONNECT') || str.includes('<<< CONNECTED') || str.includes('ERROR')) {
+          console.log('STOMP: ' + str);
+        }
+      },
+      reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
     });
 
-    this.client.onConnect = () => {
-      console.log('✅ Connected to WebSocket');
+    this.client.onConnect = (frame) => {
+      console.log('✅ WebSocket Connected successfully');
       this.connected$.next(true);
     };
 
     this.client.onDisconnect = () => {
-      console.log('❌ Disconnected from WebSocket');
+      console.log('❌ WebSocket Disconnected');
       this.connected$.next(false);
     };
 
     this.client.onStompError = (frame) => {
-      console.error('🔴 STOMP error:', frame);
+      console.error('🔴 STOMP error:', frame.headers['message']);
+      console.error('🔴 Error details:', frame.body);
+    };
+
+    this.client.onWebSocketError = (error) => {
+      console.error('🔴 WebSocket error:', error);
     };
   }
 
   connect(): void {
     if (!this.client.active) {
+      console.log('🔌 Activating WebSocket client...');
       this.client.activate();
+    } else {
+      console.log('🔌 WebSocket client already active');
     }
   }
 
@@ -58,19 +73,20 @@ export class WebSocketService {
 
   subscribe(destination: string, callback: (message: Message) => void): StompSubscription | null {
     if (!this.client.connected) {
-      console.warn('⚠️ Cannot subscribe: WebSocket not connected');
+      console.warn('⚠️ Cannot subscribe: WebSocket not connected to', destination);
       return null;
     }
 
     // Unsubscribe from existing subscription if any
     const existingSub = this.subscriptions.get(destination);
     if (existingSub) {
+      console.log(`🔄 Unsubscribing from existing subscription: ${destination}`);
       existingSub.unsubscribe();
     }
 
     const subscription = this.client.subscribe(destination, callback);
     this.subscriptions.set(destination, subscription);
-    console.log(`📡 Subscribed to ${destination}`);
+    console.log(`📡 Successfully subscribed to ${destination}`);
     return subscription;
   }
 
@@ -90,20 +106,26 @@ export class WebSocketService {
     return new Promise((resolve, reject) => {
       if (this.client.connected) {
         resolve();
-      } else {
-        const checkConnection = setInterval(() => {
-          if (this.client.connected) {
-            clearInterval(checkConnection);
-            resolve();
-          }
-        }, 100);
-
-        // Timeout after 10 seconds
-        setTimeout(() => {
-          clearInterval(checkConnection);
-          reject(new Error('WebSocket connection timeout'));
-        }, 10000);
+        return;
       }
+
+      // Assurer que le client essaie de se connecter
+      if (!this.client.active) {
+        this.client.activate();
+      }
+
+      const checkConnection = setInterval(() => {
+        if (this.client.connected) {
+          clearInterval(checkConnection);
+          resolve();
+        }
+      }, 100);
+
+      // Timeout after 15 seconds
+      setTimeout(() => {
+        clearInterval(checkConnection);
+        reject(new Error('WebSocket connection timeout after 15s'));
+      }, 15000);
     });
   }
 } 

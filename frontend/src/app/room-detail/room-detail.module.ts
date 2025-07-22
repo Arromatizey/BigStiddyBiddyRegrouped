@@ -22,4 +22,8 @@ import { PomodoroTimerComponent } from './pomodoro-timer/pomodoro-timer.componen
     RoomDetailRoutingModule
   ]
 })
-export class RoomDetailModule { }
+export class RoomDetailModule { 
+  constructor() {
+    console.log('🏗️ RoomDetailModule initialized successfully');
+  }
+}

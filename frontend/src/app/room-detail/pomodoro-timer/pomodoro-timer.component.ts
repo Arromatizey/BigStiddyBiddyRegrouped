@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TimerService, TimerState } from '../timer.service';
@@ -7,7 +7,8 @@ import { Room } from '../../shared/models/room.models';
 @Component({
   selector: 'app-pomodoro-timer',
   templateUrl: './pomodoro-timer.component.html',
-  styleUrl: './pomodoro-timer.component.css'
+  styleUrl: './pomodoro-timer.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PomodoroTimerComponent implements OnInit, OnDestroy {
   @Input() room!: Room;
@@ -19,7 +20,11 @@ export class PomodoroTimerComponent implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
 
-  constructor(private timerService: TimerService) {}
+  constructor(
+    private timerService: TimerService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit(): void {
     if (this.room) {
@@ -33,8 +38,12 @@ export class PomodoroTimerComponent implements OnInit, OnDestroy {
       this.timerService.getTimerState().pipe(
         takeUntil(this.destroy$)
       ).subscribe(state => {
-        this.timerState = state;
-        this.updateDisplay();
+        console.log('⏰ Timer state updated in component:', state);
+        this.ngZone.run(() => {
+          this.timerState = state;
+          this.updateDisplay();
+          this.cdr.detectChanges();
+        });
       });
     }
   }

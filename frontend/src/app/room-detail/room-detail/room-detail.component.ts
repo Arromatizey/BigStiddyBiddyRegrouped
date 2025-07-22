@@ -31,8 +31,10 @@ export class RoomDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentUserId = this.authService.getCurrentUserId();
+    console.log('🏠 RoomDetailComponent initializing for user:', this.currentUserId);
     
-    // Connect to WebSocket
+    // Connect to WebSocket once
+    console.log('🔌 Connecting to WebSocket...');
     this.webSocketService.connect();
     
     // Get room ID from route
@@ -40,6 +42,7 @@ export class RoomDetailComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(params => {
       const roomId = params['id'];
+      console.log('🏠 Loading room:', roomId);
       if (roomId) {
         this.loadRoom(roomId);
       }
@@ -47,9 +50,11 @@ export class RoomDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    console.log('🏠 RoomDetailComponent destroying...');
     this.destroy$.next();
     this.destroy$.complete();
-    this.webSocketService.disconnect();
+    // Don't disconnect WebSocket here as other components might need it
+    // this.webSocketService.disconnect();
   }
 
   private loadRoom(roomId: string): void {

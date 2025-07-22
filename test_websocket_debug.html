@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test - StudyBuddy</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Debug Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+    
+    <hr>
+    <h3>Send Test Message</h3>
+    <input type="text" id="roomId" placeholder="Room ID" value="7ec19189-5c36-4c44-8dfc-2008805ccbf9">
+    <input type="text" id="userId" placeholder="User ID" value="6fbb9b1c-4394-4aa4-a5ee-322b040fc343">
+    <input type="text" id="messageText" placeholder="Message" value="Test message from debug script">
+    <button onclick="sendMessage()">Send Message</button>
+
+    <script>
+        // Global polyfill for SockJS
+        window.global = window;
+        
+        let stompClient;
+        let connected = false;
+        
+        function connect() {
+            console.log('🔌 Connecting to WebSocket...');
+            
+            const socket = new SockJS('http://localhost:8080/chat');
+            stompClient = new StompJs.Client({
+                webSocketFactory: () => socket,
+                debug: function (str) {
+                    console.log('STOMP: ' + str);
+                    document.getElementById('messages').innerHTML += '<br/>STOMP: ' + str;
+                },
+                reconnectDelay: 5000,
+                heartbeatIncoming: 4000,
+                heartbeatOutgoing: 4000,
+            });
+
+            stompClient.onConnect = function (frame) {
+                console.log('✅ Connected: ' + frame);
+                document.getElementById('status').innerText = 'Connected';
+                connected = true;
+                
+                // Subscribe to a test room
+                const roomId = document.getElementById('roomId').value;
+                subscribeToRoom(roomId);
+            };
+
+            stompClient.onWebSocketError = function (error) {
+                console.error('❌ WebSocket Error: ', error);
+                document.getElementById('status').innerText = 'WebSocket Error: ' + error;
+            };
+
+            stompClient.onStompError = function (frame) {
+                console.error('❌ STOMP Error: ' + frame.headers['message']);
+                document.getElementById('status').innerText = 'STOMP Error: ' + frame.headers['message'];
+            };
+
+            stompClient.activate();
+        }
+        
+        function subscribeToRoom(roomId) {
+            if (connected && stompClient) {
+                console.log('📡 Subscribing to room:', roomId);
+                
+                stompClient.subscribe('/topic/rooms/' + roomId + '/messages', function (message) {
+                    console.log('📨 Received message:', message.body);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.background = '#e8f5e8';
+                    messageDiv.style.padding = '10px';
+                    messageDiv.style.margin = '5px';
+                    messageDiv.innerHTML = '<strong>Received:</strong> ' + message.body;
+                    document.getElementById('messages').appendChild(messageDiv);
+                });
+                
+                stompClient.subscribe('/topic/rooms/' + roomId + '/timer', function (message) {
+                    console.log('⏰ Received timer:', message.body);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.background = '#e8e8f5';
+                    messageDiv.style.padding = '10px';
+                    messageDiv.style.margin = '5px';
+                    messageDiv.innerHTML = '<strong>Timer:</strong> ' + message.body;
+                    document.getElementById('messages').appendChild(messageDiv);
+                });
+                
+                console.log('✅ Subscribed to room ' + roomId);
+            }
+        }
+        
+        function sendMessage() {
+            const roomId = document.getElementById('roomId').value;
+            const userId = document.getElementById('userId').value;
+            const message = document.getElementById('messageText').value;
+            
+            // Send via HTTP API (should trigger WebSocket broadcast)
+            fetch(`http://localhost:8080/api/messages/room/${roomId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    message: message
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ Message sent via API');
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.background = '#fffacd';
+                    messageDiv.style.padding = '10px';
+                    messageDiv.style.margin = '5px';
+                    messageDiv.innerHTML = '<strong>Sent:</strong> ' + message;
+                    document.getElementById('messages').appendChild(messageDiv);
+                } else {
+                    console.error('❌ Failed to send message:', response.status);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error sending message:', error);
+            });
+        }
+        
+        // Auto-connect on load
+        connect();
+    </script>
+</body>
+</html> 

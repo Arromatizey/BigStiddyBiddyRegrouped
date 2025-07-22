@@ -6,6 +6,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig {
+  // Désactiver cette configuration CORS pour éviter les conflits
+  // La configuration CORS se fait maintenant uniquement dans DevSecurityConfig
+  /*
   @Bean
  public WebMvcConfigurer corsConfigurer() {
       return new WebMvcConfigurer() {
@@ -19,4 +22,5 @@ public class WebConfig {
            }
        };
     }
+    */
 }

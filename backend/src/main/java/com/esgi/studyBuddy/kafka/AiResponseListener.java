@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,6 +23,7 @@ public class AiResponseListener {
     private final UserRepository userRepository;
     private final RoomMessageRepository roomMessageRepository;
     private final ObjectMapper objectMapper; // Injected for JSON deserialization
+    private final SimpMessagingTemplate messagingTemplate;
 
     private static final String AI_USER_EMAIL = "ai@studybuddy.com";
 
@@ -48,7 +50,11 @@ public class AiResponseListener {
                     .message(event.response())
                     .build();
 
-            roomMessageRepository.save(aiMessage);
+            RoomMessage savedAiMessage = roomMessageRepository.save(aiMessage);
+            
+            // 🔥 Diffuser la réponse AI via WebSocket en temps réel
+            messagingTemplate.convertAndSend("/topic/rooms/" + event.roomId() + "/messages", savedAiMessage);
+            log.info("📡 Réponse AI diffusée via WebSocket pour la room {}: {}", event.roomId(), event.response());
             log.info("Saved AI message to DB.");
         } catch (Exception e) {
             log.error("Failed to process AI response message: {}", message, e);

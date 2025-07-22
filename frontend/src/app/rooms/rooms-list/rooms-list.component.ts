@@ -172,6 +172,7 @@ export class RoomsListComponent implements OnInit {
     this.roomsService.joinRoom(roomId, userId).subscribe({
       next: () => {
         console.log(`✅ Successfully joined room ${roomId}`);
+        console.log(`🧭 Navigating to room detail page: /room/${roomId}`);
         this.router.navigate(['/room', roomId]);
       },
       error: (error) => {

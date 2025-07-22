@@ -33,13 +33,16 @@ export class TimerService {
   }
 
   connectToRoomTimer(roomId: string): void {
+    console.log('⏰ TimerService connecting to room timer:', roomId);
     this.webSocketService.waitForConnection().then(() => {
+      console.log('⏰ TimerService WebSocket connected, subscribing to timer updates...');
       this.webSocketService.subscribe(`/topic/rooms/${roomId}/timer`, (message: Message) => {
+        console.log('⏰ Received timer update via WebSocket:', message.body);
         const timerData = JSON.parse(message.body);
         this.updateTimerState(timerData);
       });
     }).catch(error => {
-      console.error('Failed to connect to room timer:', error);
+      console.error('❌ Failed to connect to room timer:', error);
     });
   }
 

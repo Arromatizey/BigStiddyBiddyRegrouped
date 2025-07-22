@@ -33,15 +33,7 @@
         [disabled]="loginForm.invalid || loading">
         {{ loading ? 'Connexion...' : 'Se connecter' }}
       </button>
-      
-      <!-- Bouton de test temporaire pour déboguer -->
-      <button 
-        type="button" 
-        class="btn btn-secondary" 
-        (click)="testAuthAPI()"
-        style="margin-top: 10px; margin-left: 10px;">
-        🧪 Test API
-      </button>
+    
     </form>
     
     <p class="register-link">

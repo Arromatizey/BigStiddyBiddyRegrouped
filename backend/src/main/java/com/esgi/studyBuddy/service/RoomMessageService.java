@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class RoomMessageService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final KafkaTemplate<String, AiMessageEvent> kafkaTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public List<RoomMessage> getLastMessages(UUID roomId) {
         return messageRepository.findTop50ByRoom_IdOrderByCreatedAtDesc(roomId);
@@ -40,7 +42,11 @@ public class RoomMessageService {
                 .message(content)
                 .build();
 
-        messageRepository.save(message);
+        RoomMessage savedMessage = messageRepository.save(message);
+        
+        // 🔥 Diffuser le message via WebSocket en temps réel
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/messages", savedMessage);
+        log.info("📡 Message diffusé via WebSocket pour la room {}: {}", roomId, content);
     }
     public void saveMessageAndNotifyAI(UUID roomId, UUID userId, String content) {
         User user = userRepository.findById(userId).orElseThrow();
@@ -52,7 +58,11 @@ public class RoomMessageService {
                 .room(room)
                 .message(content)
                 .build();
-        messageRepository.save(message);
+        RoomMessage savedMessage = messageRepository.save(message);
+        
+        // 🔥 Diffuser le message AI via WebSocket en temps réel
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/messages", savedMessage);
+        log.info("📡 Message AI diffusé via WebSocket pour la room {}: {}", roomId, content);
 
         // 📜 Get conversation context
         List<RoomMessage> previousMessages = messageRepository.findTop50ByRoom_IdOrderByCreatedAtDesc(roomId);

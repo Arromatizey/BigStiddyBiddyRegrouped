@@ -32,14 +32,31 @@ export class ChatService {
   }
 
   connectToRoom(roomId: string): void {
+    console.log('📡 ChatService connecting to room:', roomId);
+    // First, ensure WebSocket is connected
+    this.webSocketService.connect();
+    
     // Subscribe to room messages
     this.webSocketService.waitForConnection().then(() => {
-      this.webSocketService.subscribe(`/topic/rooms/${roomId}/messages`, (message: Message) => {
-        const roomMessage = JSON.parse(message.body) as RoomMessage;
-        this.messagesSubject.next(roomMessage);
+      console.log('📡 ChatService WebSocket connected, subscribing to messages...');
+      const subscription = this.webSocketService.subscribe(`/topic/rooms/${roomId}/messages`, (message: Message) => {
+        console.log('📨 Received chat message via WebSocket:', message.body);
+        try {
+          const roomMessage = JSON.parse(message.body) as RoomMessage;
+          console.log('📨 Parsed message:', roomMessage);
+          this.messagesSubject.next(roomMessage);
+        } catch (error) {
+          console.error('❌ Error parsing WebSocket message:', error, message.body);
+        }
       });
+      
+      if (subscription) {
+        console.log('✅ Successfully subscribed to room messages');
+      } else {
+        console.error('❌ Failed to create subscription');
+      }
     }).catch(error => {
-      console.error('Failed to connect to room chat:', error);
+      console.error('❌ Failed to connect to room chat:', error);
     });
   }
 

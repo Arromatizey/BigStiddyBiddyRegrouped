@@ -49,20 +49,25 @@ public class DevSecurityConfig {
     @Bean
     public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors ->{}) // ✅ Use the CORS configuration
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Use the CORS configuration
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/chat/**", "/topic/**", "/app/**").permitAll();
+                    auth.anyRequest().permitAll();
+                });
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        // Configuration spécifique pour éviter le problème "allowCredentials + allowedOrigins(*)"
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "https://localhost:*"));
+        config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:4201"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
-        config.setMaxAge(3600L); // ✅ Add cache time for preflight requests
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
