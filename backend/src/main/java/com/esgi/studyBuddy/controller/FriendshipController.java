@@ -1,6 +1,7 @@
 package com.esgi.studyBuddy.controller;
 
 import com.esgi.studyBuddy.model.Friendship;
+import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.service.FriendshipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,13 @@ public class FriendshipController {
     public ResponseEntity<List<Friendship>> getAllFriendships() {
         return ResponseEntity.ok(friendshipService.getAllFriendships());
     }
+
+    @GetMapping("/users/{userId}/friends")
+    public ResponseEntity<List<User>> getFriends(@PathVariable UUID userId) {
+        return ResponseEntity.ok(friendshipService.getAcceptedFriends(userId));
+    }
+
+
 
     @PostMapping("/request")
     public ResponseEntity<Void> sendRequest(@RequestParam UUID from, @RequestParam UUID to) {

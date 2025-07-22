@@ -3,6 +3,7 @@ package com.esgi.studyBuddy.service;
 import com.esgi.studyBuddy.model.Friendship;
 import com.esgi.studyBuddy.model.FriendshipId;
 import com.esgi.studyBuddy.model.FriendshipStatus;
+import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.FriendshipRepository;
 import com.esgi.studyBuddy.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -42,4 +44,18 @@ public class FriendshipService {
         f.setStatus(FriendshipStatus.accepted);
         friendshipRepository.save(f);
     }
+
+    public List<User> getAcceptedFriends(UUID userId) {
+        List<Friendship> friendships = friendshipRepository.findByStatusAndRequesterIdOrStatusAndTargetId(
+                FriendshipStatus.accepted, userId,
+                FriendshipStatus.accepted, userId
+        );
+
+        return friendships.stream()
+                .map(f -> f.getRequester().getId().equals(userId) ? f.getTarget() : f.getRequester())
+                .collect(Collectors.toList());
+    }
+
+
+
 }
