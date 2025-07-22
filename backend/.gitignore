@@ -33,3 +33,6 @@ build/
 .vscode/
 
 .env
+
+# Angular build cache
+.angular/

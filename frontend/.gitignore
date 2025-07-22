@@ -132,3 +132,6 @@ yarn-error.log*
 !.vscode/extensions.json
 .history/*
 .sass-cache/ 
+
+# Angular build cache
+.angular/
