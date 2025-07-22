@@ -1,0 +1,88 @@
+<div class="dialog-overlay" *ngIf="isVisible" (click)="hide()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h2>Créer une nouvelle salle d'étude</h2>
+      <button class="close-btn" (click)="hide()">&times;</button>
+    </div>
+    
+    <form [formGroup]="createRoomForm" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="subject">Matière *</label>
+          <input 
+            type="text" 
+            id="subject" 
+            formControlName="subject" 
+            class="form-control"
+            placeholder="Ex: Mathématiques"
+            [class.is-invalid]="createRoomForm.get('subject')?.invalid && createRoomForm.get('subject')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label for="level">Niveau *</label>
+          <select 
+            id="level" 
+            formControlName="level" 
+            class="form-control"
+            [class.is-invalid]="createRoomForm.get('level')?.invalid && createRoomForm.get('level')?.touched">
+            <option value="">Sélectionner un niveau</option>
+            <option value="Débutant">Débutant</option>
+            <option value="Intermédiaire">Intermédiaire</option>
+            <option value="Avancé">Avancé</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="topic">Sujet</label>
+          <input 
+            type="text" 
+            id="topic" 
+            formControlName="topic" 
+            class="form-control"
+            placeholder="Ex: Calcul différentiel">
+        </div>
+
+        <div class="form-group">
+          <label for="institution">Institution</label>
+          <input 
+            type="text" 
+            id="institution" 
+            formControlName="institution" 
+            class="form-control"
+            placeholder="Ex: Université Paris">
+        </div>
+
+        <div class="form-group">
+          <label for="focusDuration">Durée focus (min) *</label>
+          <input 
+            type="number" 
+            id="focusDuration" 
+            formControlName="focusDuration" 
+            class="form-control"
+            min="1"
+            max="120">
+        </div>
+
+        <div class="form-group">
+          <label for="breakDuration">Durée pause (min) *</label>
+          <input 
+            type="number" 
+            id="breakDuration" 
+            formControlName="breakDuration" 
+            class="form-control"
+            min="1"
+            max="60">
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" (click)="hide()">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="createRoomForm.invalid">
+          Créer la salle
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

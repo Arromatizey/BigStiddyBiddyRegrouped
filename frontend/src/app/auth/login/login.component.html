@@ -1,0 +1,52 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Connexion StudyBuddy</h2>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          class="form-control"
+          [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Mot de passe:</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          class="form-control"
+          [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+      </div>
+      
+      <div class="error-message" *ngIf="error">
+        {{ error }}
+      </div>
+      
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="loginForm.invalid || loading">
+        {{ loading ? 'Connexion...' : 'Se connecter' }}
+      </button>
+      
+      <!-- Bouton de test temporaire pour déboguer -->
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="testAuthAPI()"
+        style="margin-top: 10px; margin-left: 10px;">
+        🧪 Test API
+      </button>
+    </form>
+    
+    <p class="register-link">
+      Pas encore de compte ? 
+      <a routerLink="/auth/register">Inscrivez-vous</a>
+    </p>
+  </div>
+</div>

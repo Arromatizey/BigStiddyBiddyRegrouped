@@ -1,0 +1,54 @@
+<div class="register-container">
+  <div class="register-card">
+    <h2>Inscription StudyBuddy</h2>
+    
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="displayName">Nom d'affichage:</label>
+        <input 
+          type="text" 
+          id="displayName" 
+          formControlName="displayName" 
+          class="form-control"
+          [class.is-invalid]="registerForm.get('displayName')?.invalid && registerForm.get('displayName')?.touched">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          class="form-control"
+          [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Mot de passe:</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          class="form-control"
+          [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+        <small class="form-text">Minimum 6 caractères</small>
+      </div>
+      
+      <div class="error-message" *ngIf="error">
+        {{ error }}
+      </div>
+      
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="registerForm.invalid || loading">
+        {{ loading ? 'Inscription...' : 'S\'inscrire' }}
+      </button>
+    </form>
+    
+    <p class="login-link">
+      Déjà inscrit ? 
+      <a routerLink="/auth/login">Connectez-vous</a>
+    </p>
+  </div>
+</div>

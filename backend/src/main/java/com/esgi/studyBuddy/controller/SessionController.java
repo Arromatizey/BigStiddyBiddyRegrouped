@@ -9,6 +9,7 @@ import java.util.UUID;
 
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/api/sessions")
 @RequiredArgsConstructor
 public class SessionController {

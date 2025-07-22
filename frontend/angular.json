@@ -62,12 +62,16 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "hmr": false
+          },
           "configurations": {
             "production": {
               "browserTarget": "studybuddy-frontend:build:production"
             },
             "development": {
-              "browserTarget": "studybuddy-frontend:build:development"
+              "browserTarget": "studybuddy-frontend:build:development",
+              "hmr": false
             }
           },
           "defaultConfiguration": "development"

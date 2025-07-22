@@ -1,0 +1,140 @@
+<div class="rooms-container">
+  <header class="rooms-header">
+    <h1>Salles d'étude</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openCreateRoomDialog()">
+        Créer une salle
+      </button>
+      <button class="btn btn-secondary" (click)="testBackendConnectivity()" style="margin-right: 10px;">
+        🔍 Test Backend
+      </button>
+      <button class="btn btn-secondary" (click)="testRoomCreation()" style="margin-right: 10px;">
+        🧪 Test Room Creation
+      </button>
+      <button class="btn btn-secondary" (click)="logout()">
+        Déconnexion
+      </button>
+    </div>
+  </header>
+
+  <div class="loading" *ngIf="loading">
+    <p>Chargement des salles...</p>
+  </div>
+
+  <div class="rooms-grid" *ngIf="!loading">
+    <div class="room-card" *ngFor="let room of rooms">
+      <div class="room-info">
+        <h3>{{ room.subject }}</h3>
+        <p><strong>Niveau:</strong> {{ room.level }}</p>
+        <p><strong>Sujet:</strong> {{ room.topic }}</p>
+        <p><strong>Focus:</strong> {{ room.focusDuration }} min</p>
+        <p><strong>Pause:</strong> {{ room.breakDuration }} min</p>
+        <div class="room-status">
+          <span class="status" [class.active]="room.isActive">
+            {{ room.isActive ? 'Active' : 'Inactive' }}
+          </span>
+          <span class="timer-status" *ngIf="room.timerRunning">
+            {{ room.isOnBreak ? 'En pause' : 'Focus en cours' }}
+          </span>
+        </div>
+      </div>
+      <div class="room-actions">
+        <button class="btn btn-primary" (click)="joinRoom(room.id!)">
+          Rejoindre la salle
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="rooms.length === 0">
+      <p>Aucune salle disponible. Créez votre première salle d'étude !</p>
+    </div>
+  </div>
+
+  <!-- Create Room Dialog (inline) -->
+  <div class="dialog-overlay" *ngIf="showCreateDialog" (click)="hideCreateDialog()">
+    <div class="dialog-content" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>Créer une nouvelle salle d'étude</h2>
+        <button class="close-btn" (click)="hideCreateDialog()">&times;</button>
+      </div>
+      
+      <form [formGroup]="createRoomForm" (ngSubmit)="onCreateRoom()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="subject">Matière *</label>
+            <input 
+              type="text" 
+              id="subject" 
+              formControlName="subject" 
+              class="form-control"
+              placeholder="Ex: Mathématiques">
+          </div>
+
+          <div class="form-group">
+            <label for="level">Niveau *</label>
+            <select 
+              id="level" 
+              formControlName="level" 
+              class="form-control">
+              <option value="">Sélectionner un niveau</option>
+              <option value="Débutant">Débutant</option>
+              <option value="Intermédiaire">Intermédiaire</option>
+              <option value="Avancé">Avancé</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="topic">Sujet</label>
+            <input 
+              type="text" 
+              id="topic" 
+              formControlName="topic" 
+              class="form-control"
+              placeholder="Ex: Calcul différentiel">
+          </div>
+
+          <div class="form-group">
+            <label for="institution">Institution</label>
+            <input 
+              type="text" 
+              id="institution" 
+              formControlName="institution" 
+              class="form-control"
+              placeholder="Ex: Université Paris">
+          </div>
+
+          <div class="form-group">
+            <label for="focusDuration">Durée focus (min) *</label>
+            <input 
+              type="number" 
+              id="focusDuration" 
+              formControlName="focusDuration" 
+              class="form-control"
+              min="1"
+              max="120">
+          </div>
+
+          <div class="form-group">
+            <label for="breakDuration">Durée pause (min) *</label>
+            <input 
+              type="number" 
+              id="breakDuration" 
+              formControlName="breakDuration" 
+              class="form-control"
+              min="1"
+              max="60">
+          </div>
+        </div>
+
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" (click)="hideCreateDialog()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="createRoomForm.invalid">
+            Créer la salle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
