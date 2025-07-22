@@ -130,4 +130,32 @@ export class RoomsService {
       headers: this.getHeaders()
     });
   }
+
+  getRoomById(roomId: string): Observable<Room> {
+    return this.http.get<Room>(`${this.baseUrl}/rooms/${roomId}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(room => {
+        console.log('✅ Room fetched successfully:', room);
+      }),
+      catchError(error => {
+        console.error('❌ Error fetching room:', error);
+        throw error;
+      })
+    );
+  }
+
+  getRoomMembers(roomId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/rooms/${roomId}/members`, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(members => {
+        console.log('✅ Room members fetched successfully:', members);
+      }),
+      catchError(error => {
+        console.error('❌ Error fetching room members:', error);
+        throw error;
+      })
+    );
+  }
 }

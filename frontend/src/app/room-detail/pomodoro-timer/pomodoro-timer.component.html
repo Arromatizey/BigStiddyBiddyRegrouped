@@ -1,1 +1,102 @@
-<p>pomodoro-timer works!</p>
+<div class="pomodoro-timer">
+  <!-- Timer Display -->
+  <div class="timer-display">
+    <div class="phase-indicator">
+      <span class="phase-icon">{{ phaseIcon }}</span>
+      <span class="phase-label">{{ phaseLabel }}</span>
+    </div>
+    
+    <div class="time-display">
+      <span class="time">{{ displayTime }}</span>
+    </div>
+    
+    <!-- Progress Ring -->
+    <svg class="progress-ring" viewBox="0 0 200 200">
+      <circle
+        class="progress-ring-background"
+        cx="100"
+        cy="100"
+        r="90"
+        fill="none"
+        stroke="#e0e0e0"
+        stroke-width="8"
+      />
+      <circle
+        class="progress-ring-bar"
+        cx="100"
+        cy="100"
+        r="90"
+        fill="none"
+        [style.stroke]="progressColor"
+        stroke-width="8"
+        stroke-linecap="round"
+        [style.stroke-dasharray]="565.48"
+        [style.stroke-dashoffset]="565.48 - (565.48 * progress / 100)"
+        transform="rotate(-90 100 100)"
+      />
+    </svg>
+  </div>
+
+  <!-- Timer Controls -->
+  <div class="timer-controls" *ngIf="canControl">
+    <button 
+      class="btn btn-primary" 
+      (click)="startTimer()"
+      *ngIf="!isRunning && (!timerState || timerState.elapsedSeconds === 0)"
+      [disabled]="!room">
+      <span class="icon">▶️</span>
+      Démarrer
+    </button>
+    
+    <button 
+      class="btn btn-warning" 
+      (click)="pauseTimer()"
+      *ngIf="isRunning"
+      [disabled]="!room">
+      <span class="icon">⏸️</span>
+      Pause
+    </button>
+    
+    <button 
+      class="btn btn-primary" 
+      (click)="resumeTimer()"
+      *ngIf="!isRunning && timerState && timerState.elapsedSeconds > 0"
+      [disabled]="!room">
+      <span class="icon">▶️</span>
+      Reprendre
+    </button>
+    
+    <button 
+      class="btn btn-secondary" 
+      (click)="resetTimer()"
+      [disabled]="!room || (!isRunning && (!timerState || timerState.elapsedSeconds === 0))">
+      <span class="icon">🔄</span>
+      Réinitialiser
+    </button>
+  </div>
+
+  <!-- Timer Info -->
+  <div class="timer-info">
+    <div class="duration-info">
+      <span class="label">Focus:</span>
+      <span class="value">{{ room?.focusDuration || 25 }} min</span>
+    </div>
+    <div class="duration-info">
+      <span class="label">Pause:</span>
+      <span class="value">{{ room?.breakDuration || 5 }} min</span>
+    </div>
+  </div>
+
+  <!-- Motivational Message -->
+  <div class="motivation-message" *ngIf="timerState">
+    <p *ngIf="timerState.phase === 'focus' && isRunning">
+      💪 Restez concentré ! Vous pouvez le faire !
+    </p>
+    <p *ngIf="timerState.phase === 'break' && isRunning">
+      ☕ Profitez de votre pause, vous l'avez mérité !
+    </p>
+    <p *ngIf="!isRunning && timerState.elapsedSeconds === 0">
+      🎯 Prêt à commencer une nouvelle session ?
+    </p>
+  </div>
+</div>

@@ -1,1 +1,92 @@
-<p>room-detail works!</p>
+<div class="room-detail-container" [attr.data-theme]="getRoomTheme()">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement de la salle...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error && !loading">
+    <div class="error-message">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" routerLink="/rooms">Retour aux salles</button>
+    </div>
+  </div>
+
+  <!-- Room Content -->
+  <div class="room-content" *ngIf="room && !loading && !error">
+    <!-- Header -->
+    <header class="room-header">
+      <div class="room-info">
+        <h1>{{ room.subject }}</h1>
+        <div class="room-details">
+          <span class="badge">{{ room.level }}</span>
+          <span class="topic" *ngIf="room.topic">{{ room.topic }}</span>
+          <span class="members-count">
+            <span class="icon">👥</span>
+            {{ roomMembers.length }} membre{{ roomMembers.length > 1 ? 's' : '' }}
+          </span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="leaveRoom()">
+          <span class="icon">🚪</span>
+          Quitter la salle
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+      <!-- Left Panel - Timer & Members -->
+      <aside class="left-panel">
+        <!-- Pomodoro Timer -->
+        <section class="timer-section">
+          <app-pomodoro-timer 
+            [room]="room" 
+            [currentUserId]="currentUserId">
+          </app-pomodoro-timer>
+        </section>
+
+        <!-- Room Members -->
+        <section class="members-section">
+          <h3>Participants</h3>
+          <div class="members-list">
+            <div class="member" *ngFor="let member of roomMembers">
+              <div class="member-avatar">
+                {{ member.displayName?.charAt(0)?.toUpperCase() || member.email?.charAt(0)?.toUpperCase() }}
+              </div>
+              <div class="member-info">
+                <span class="member-name">{{ member.displayName || member.email }}</span>
+                <span class="member-role" *ngIf="member.role === 'owner'">👑 Créateur</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Study Tips -->
+        <section class="tips-section">
+          <h3>💡 Conseils d'étude</h3>
+          <div class="tip-card">
+            <p>Restez hydraté ! Buvez de l'eau régulièrement pendant vos sessions.</p>
+          </div>
+          <div class="tip-card">
+            <p>Utilisez la technique Pomodoro : 25 minutes de focus, 5 minutes de pause.</p>
+          </div>
+          <div class="tip-card">
+            <p>Tapez <strong>@ai</strong> suivi de votre question pour obtenir de l'aide de l'IA.</p>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Panel - Chat -->
+      <main class="chat-panel">
+        <app-chat 
+          [room]="room" 
+          [currentUserId]="currentUserId">
+        </app-chat>
+      </main>
+    </div>
+  </div>
+</div>

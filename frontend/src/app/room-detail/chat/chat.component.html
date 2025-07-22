@@ -1,1 +1,85 @@
-<p>chat works!</p>
+<div class="chat-container">
+  <!-- Chat Header -->
+  <div class="chat-header">
+    <h2>💬 Discussion</h2>
+    <span class="chat-info">Tapez @ai pour poser une question à l'IA</span>
+  </div>
+
+  <!-- Messages Container -->
+  <div 
+    class="messages-container" 
+    #messagesContainer
+    (scroll)="onScroll()"
+    *ngIf="!loading">
+    
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="messages.length === 0">
+      <p>Aucun message pour le moment.</p>
+      <p>Soyez le premier à briser la glace ! 🎉</p>
+    </div>
+
+    <!-- Messages List -->
+    <div class="messages-list" *ngIf="messages.length > 0">
+      <div 
+        class="message"
+        *ngFor="let message of messages"
+        [class.own-message]="isOwnMessage(message)"
+        [class.ai-message]="isAIMessage(message)">
+        
+        <!-- Message Avatar -->
+        <div class="message-avatar">
+          <span *ngIf="!isAIMessage(message)">
+            {{ message.user?.displayName?.charAt(0)?.toUpperCase() || message.user?.email?.charAt(0)?.toUpperCase() }}
+          </span>
+          <span *ngIf="isAIMessage(message)">🤖</span>
+        </div>
+        
+        <!-- Message Content -->
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-author">
+              {{ isAIMessage(message) ? 'Assistant IA' : (message.user?.displayName || message.user?.email) }}
+            </span>
+            <span class="message-time">{{ formatMessageTime(message.createdAt) }}</span>
+          </div>
+          <div class="message-text">{{ message.message }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="messages-loading" *ngIf="loading">
+    <div class="spinner-small"></div>
+    <p>Chargement des messages...</p>
+  </div>
+
+  <!-- Message Input -->
+  <form class="message-input-container" (ngSubmit)="sendMessage()">
+    <div class="input-wrapper">
+      <input
+        type="text"
+        class="message-input"
+        [(ngModel)]="newMessage"
+        name="newMessage"
+        placeholder="Écrivez votre message..."
+        [disabled]="sendingMessage || !currentUserId"
+        autocomplete="off">
+      
+      <button
+        type="submit"
+        class="send-button"
+        [disabled]="!newMessage.trim() || sendingMessage || !currentUserId"
+        [class.sending]="sendingMessage">
+        <span *ngIf="!sendingMessage">📤</span>
+        <span *ngIf="sendingMessage" class="spinner-tiny"></span>
+      </button>
+    </div>
+    
+    <!-- AI Hint -->
+    <div class="ai-hint" *ngIf="newMessage.startsWith('@ai')">
+      <span class="hint-icon">💡</span>
+      <span>Votre message sera envoyé à l'assistant IA</span>
+    </div>
+  </form>
+</div>
