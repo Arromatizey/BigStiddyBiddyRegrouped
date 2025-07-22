@@ -40,3 +40,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  ia-server:
+    build: ./ia-server
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_GROUP_ID: ia-server-group
+      IA_API_URL: https://api.mistral.ai/v1/chat/completions
+      IA_API_KEY: afXVEnCfiz5cfr5k7GZvDw1jFVczmvKt
+    restart: unless-stopped
