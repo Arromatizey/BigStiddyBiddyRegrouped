@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FriendsService } from '../../shared/services/friends.service';
@@ -22,6 +23,7 @@ export class FriendsListComponent implements OnInit, OnDestroy {
 
   constructor(
     private friendsService: FriendsService,
+    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -101,38 +103,38 @@ export class FriendsListComponent implements OnInit, OnDestroy {
     }
     
     if (!user.lastSeenAt) {
-      return 'Jamais vu';
+      return 'Jamais connecté';
     }
 
     const lastSeen = new Date(user.lastSeenAt);
     const now = new Date();
-    const diffMs = now.getTime() - lastSeen.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMinutes / 60);
-    const diffDays = Math.floor(diffHours / 24);
+    const diffInMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / (1000 * 60));
 
-    if (diffMinutes < 60) {
-      return `Il y a ${diffMinutes} min`;
-    } else if (diffHours < 24) {
-      return `Il y a ${diffHours}h`;
+    if (diffInMinutes < 1) {
+      return 'À l\'instant';
+    } else if (diffInMinutes < 60) {
+      return `Il y a ${diffInMinutes} min`;
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `Il y a ${hours}h`;
     } else {
-      return `Il y a ${diffDays}j`;
+      const days = Math.floor(diffInMinutes / 1440);
+      return `Il y a ${days}j`;
     }
   }
 
   getUserInitials(displayName?: string): string {
     if (!displayName) return '?';
-    return displayName
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+    return displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
   refresh(): void {
-    console.log('🔄 Refreshing friends list');
     this.loadFriends();
+  }
+
+  openChat(friendId: string): void {
+    console.log('💬 Opening chat with friend:', friendId);
+    this.router.navigate(['/dm/chat', friendId]);
   }
 
   trackByFriendId(index: number, friend: User): string {

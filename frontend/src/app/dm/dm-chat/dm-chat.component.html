@@ -1,0 +1,66 @@
+<div class="chat-container">
+  <!-- Chat Header -->
+  <div class="chat-header">
+    <button class="back-button" (click)="router.navigate(['/dm'])">
+      ⬅️ Retour
+    </button>
+    <div class="chat-info">
+      <h2>{{ otherUserName || 'Chargement...' }}</h2>
+      <span class="chat-status" [class.online]="isOtherUserOnline">
+        {{ isOtherUserOnline ? 'En ligne' : 'Hors ligne' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="messages-container" #messagesContainer>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-messages">
+      <div class="spinner"></div>
+      <p>Chargement des messages...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && messages.length === 0" class="empty-messages">
+      <div class="empty-icon">💬</div>
+      <h3>Aucun message</h3>
+      <p>Commencez la conversation !</p>
+    </div>
+
+    <!-- Messages List -->
+    <div *ngIf="!loading && messages.length > 0" class="messages-list">
+      <div 
+        *ngFor="let message of messages; trackBy: trackByMessageId" 
+        class="message-wrapper"
+        [class.own-message]="isOwnMessage(message)">
+        
+        <div class="message">
+          <div class="message-content">
+            <p class="message-text">{{ message.message }}</p>
+            <span class="message-time">{{ formatTime(message.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Input -->
+  <div class="message-input-container">
+    <div class="input-wrapper">
+      <textarea
+        [(ngModel)]="newMessage"
+        (keypress)="onKeyPress($event)"
+        placeholder="Tapez votre message..."
+        class="message-input"
+        rows="1"
+        #messageInput>
+      </textarea>
+      <button 
+        (click)="sendMessage()" 
+        [disabled]="!newMessage.trim()"
+        class="send-button">
+        📤
+      </button>
+    </div>
+  </div>
+</div> 

@@ -60,7 +60,10 @@
 
       <!-- Actions -->
       <div class="friend-actions">
-        <button class="action-btn message-btn" title="Envoyer un message">
+        <button 
+          class="action-btn message-btn" 
+          title="Envoyer un message"
+          (click)="openChat(friend.id)">
           💬
         </button>
         <button class="action-btn profile-btn" title="Voir le profil">

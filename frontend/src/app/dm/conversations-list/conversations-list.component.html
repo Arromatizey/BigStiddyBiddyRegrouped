@@ -1,0 +1,66 @@
+<div class="conversations-container">
+  <div class="conversations-list">
+    <div class="conversations-header">
+      <h2>💬 Conversations ({{ conversations.length }})</h2>
+      <button class="refresh-btn" (click)="loadConversations()" [disabled]="loading">
+        🔄 Actualiser
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Chargement des conversations...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && conversations.length === 0" class="empty-state">
+      <div class="empty-icon">💬</div>
+      <h3>Aucune conversation</h3>
+      <p>Commencez une conversation avec vos amis !</p>
+    </div>
+
+    <!-- Conversations List -->
+    <div *ngIf="!loading && conversations.length > 0" class="conversations-grid">
+      <div 
+        *ngFor="let conversation of conversations; trackBy: trackByConversationId" 
+        class="conversation-card"
+        (click)="openConversation(conversation.otherUserId)">
+        
+        <!-- Avatar -->
+        <div class="conversation-avatar">
+          <div class="avatar-placeholder">
+            {{ getUserInitials(conversation.otherUserName) }}
+          </div>
+          <div *ngIf="conversation.unreadCount > 0" class="unread-badge">
+            {{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}
+          </div>
+          <div class="online-indicator" [class.online]="isOnline(conversation.otherUserId)"></div>
+        </div>
+
+        <!-- Conversation Info -->
+        <div class="conversation-info">
+          <div class="conversation-header">
+            <h3 class="conversation-name">{{ conversation.otherUserName }}</h3>
+            <span class="conversation-time">{{ getRelativeTime(conversation.lastMessageTime) }}</span>
+          </div>
+          <p class="conversation-preview" [class.unread]="conversation.unreadCount > 0">
+            {{ conversation.lastMessage }}
+          </p>
+          <div class="status-info">
+            <span class="status-text" [class.online]="isOnline(conversation.otherUserId)">
+              {{ isOnline(conversation.otherUserId) ? 'En ligne' : 'Hors ligne' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="conversation-actions">
+          <button class="action-btn" title="Ouvrir la conversation">
+            ➡️
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

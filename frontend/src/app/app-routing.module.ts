@@ -24,6 +24,11 @@ const routes: Routes = [
     loadChildren: () => import('./friends/friends.module').then(m => m.FriendsModule),
     canActivate: [authGuard]
   },
+  { 
+    path: 'dm', 
+    loadChildren: () => import('./dm/dm.module').then(m => m.DmModule),
+    canActivate: [authGuard]
+  },
   { path: 'login', redirectTo: '/auth/login' },
   { path: 'register', redirectTo: '/auth/register' },
   { path: '**', redirectTo: '' }

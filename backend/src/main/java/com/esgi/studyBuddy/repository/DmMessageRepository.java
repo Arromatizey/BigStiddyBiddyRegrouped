@@ -10,4 +10,6 @@ public interface DmMessageRepository extends JpaRepository<DmMessage, UUID> {
     List<DmMessage> findBySender_IdAndReceiver_IdOrReceiver_IdAndSender_IdOrderByCreatedAtAsc(
             UUID senderId, UUID receiverId, UUID receiverId2, UUID senderId2
     );
+    
+    List<DmMessage> findBySender_IdOrReceiver_IdOrderByCreatedAtDesc(UUID senderId, UUID receiverId);
 }

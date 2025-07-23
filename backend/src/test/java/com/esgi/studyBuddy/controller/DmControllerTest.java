@@ -1,5 +1,7 @@
 package com.esgi.studyBuddy.controller;
 
+import com.esgi.studyBuddy.DTO.DmMessageResponse;
+import com.esgi.studyBuddy.DTO.ConversationSummary;
 import com.esgi.studyBuddy.model.DmMessage;
 import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.service.DmMessageService;
@@ -44,31 +46,54 @@ class DmControllerTest {
         UUID userA = UUID.randomUUID();
         UUID userB = UUID.randomUUID();
 
-        User sender = new User();
-        sender.setId(userA);
-        User receiver = new User();
-        receiver.setId(userB);
-
-        DmMessage message = DmMessage.builder()
+        DmMessageResponse messageResponse = DmMessageResponse.builder()
                 .id(UUID.randomUUID())
-                .sender(sender)
-                .receiver(receiver)
+                .senderId(userA)
+                .senderName("User A")
+                .receiverId(userB)
+                .receiverName("User B")
                 .message("Hello")
                 .createdAt(Instant.now())
                 .build();
 
-        List<DmMessage> messages = List.of(message);
+        List<DmMessageResponse> messages = List.of(messageResponse);
 
         when(dmService.getConversation(userA, userB)).thenReturn(messages);
 
-        mockMvc.perform(get("/api/dm")
+        mockMvc.perform(get("/api/dm/conversation")
                         .param("userA", userA.toString())
                         .param("userB", userB.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].message").value("Hello"))
-                .andExpect(jsonPath("$[0].sender.id").value(userA.toString()))
-                .andExpect(jsonPath("$[0].receiver.id").value(userB.toString()));
+                .andExpect(jsonPath("$[0].senderId").value(userA.toString()))
+                .andExpect(jsonPath("$[0].receiverId").value(userB.toString()));
 
         verify(dmService).getConversation(userA, userB);
+    }
+
+    @Test
+    void getUserConversations_shouldReturnConversationSummaries() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UUID otherUserId = UUID.randomUUID();
+
+        ConversationSummary summary = ConversationSummary.builder()
+                .otherUserId(otherUserId)
+                .otherUserName("Other User")
+                .lastMessage("Hello")
+                .lastMessageTime(Instant.now())
+                .unreadCount(1)
+                .build();
+
+        List<ConversationSummary> summaries = List.of(summary);
+
+        when(dmService.getUserConversations(userId)).thenReturn(summaries);
+
+        mockMvc.perform(get("/api/dm/users/{userId}/conversations", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].otherUserId").value(otherUserId.toString()))
+                .andExpect(jsonPath("$[0].otherUserName").value("Other User"))
+                .andExpect(jsonPath("$[0].lastMessage").value("Hello"));
+
+        verify(dmService).getUserConversations(userId);
     }
 }

@@ -1,0 +1,270 @@
+.conversations-list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.conversations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.conversations-header h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0;
+}
+
+.refresh-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.refresh-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+}
+
+.spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.empty-state h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.empty-state p {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.conversations-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conversation-card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.conversation-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.conversation-avatar {
+  position: relative;
+  margin-right: 16px;
+}
+
+.avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+.online-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  background: #9ca3af;
+  border: 2px solid white;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.online-indicator.online {
+  background: #10b981;
+}
+
+.conversation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.conversation-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversation-time {
+  font-size: 0.8rem;
+  color: #6b7280;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.conversation-preview {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.conversation-preview.unread {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.status-info {
+  margin-top: 2px;
+}
+
+.status-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.status-text.online {
+  color: #10b981;
+}
+
+.conversation-actions {
+  margin-left: 12px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background: #f3f4f6;
+}
+
+@media (max-width: 640px) {
+  .conversations-list {
+    padding: 15px;
+  }
+  
+  .conversations-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .conversation-card {
+    padding: 12px;
+  }
+  
+  .avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .conversation-name {
+    font-size: 0.95rem;
+  }
+  
+  .conversation-preview {
+    font-size: 0.85rem;
+  }
+  
+  .online-indicator {
+    width: 14px;
+    height: 14px;
+  }
+} 
