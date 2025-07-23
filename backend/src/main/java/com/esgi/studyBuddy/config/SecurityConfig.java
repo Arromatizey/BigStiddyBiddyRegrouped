@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                             .requestMatchers("/chat/**").permitAll()
-                            .requestMatchers("/topic/**", "/app/**").permitAll();
+                            .requestMatchers("/topic/**", "/app/**").permitAll()
+                            .requestMatchers("/api/friends/**", "/api/users/**").authenticated();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

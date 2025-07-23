@@ -1,0 +1,39 @@
+### Test Friends Endpoints
+### These requests help test the friendship functionality
+
+### Variables
+@baseUrl = http://localhost:8080/api
+@userId1 = 6f0b09b1-4394-4ae4-a5ee-322b040fc343
+@userId2 = 7f0b09b1-4394-4ae4-a5ee-322b040fc344
+
+### Search users
+GET {{baseUrl}}/friends/search?query=test&currentUserId={{userId1}}
+Accept: application/json
+
+### Get friends list
+GET {{baseUrl}}/friends/users/{{userId1}}/friends
+Accept: application/json
+
+### Get pending requests
+GET {{baseUrl}}/friends/users/{{userId1}}/pending-requests
+Accept: application/json
+
+### Get sent requests  
+GET {{baseUrl}}/friends/users/{{userId1}}/sent-requests
+Accept: application/json
+
+### Send friend request
+POST {{baseUrl}}/friends/request?from={{userId1}}&to={{userId2}}
+Content-Type: application/json
+
+### Accept friend request
+POST {{baseUrl}}/friends/accept?from={{userId2}}&to={{userId1}}
+Content-Type: application/json
+
+### Reject friend request
+POST {{baseUrl}}/friends/reject?from={{userId2}}&to={{userId1}}
+Content-Type: application/json
+
+### Update last seen
+POST {{baseUrl}}/users/{{userId1}}/update-last-seen
+Content-Type: application/json 

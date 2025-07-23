@@ -19,6 +19,11 @@ const routes: Routes = [
     loadChildren: () => import('./room-detail/room-detail.module').then(m => m.RoomDetailModule),
     canActivate: [authGuard]
   },
+  { 
+    path: 'friends', 
+    loadChildren: () => import('./friends/friends.module').then(m => m.FriendsModule),
+    canActivate: [authGuard]
+  },
   { path: 'login', redirectTo: '/auth/login' },
   { path: 'register', redirectTo: '/auth/register' },
   { path: '**', redirectTo: '' }

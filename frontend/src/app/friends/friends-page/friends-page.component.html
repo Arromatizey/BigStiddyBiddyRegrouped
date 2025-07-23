@@ -1,0 +1,46 @@
+<div class="friends-page">
+  <div class="friends-header">
+    <h1>🤝 Amis</h1>
+    <p>Gérez vos amis et demandes d'amitié</p>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-navigation">
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'friends'"
+      (click)="setActiveTab('friends')">
+      👥 Mes Amis
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'requests'"
+      (click)="setActiveTab('requests')">
+      📬 Demandes
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'add'"
+      (click)="setActiveTab('add')">
+      ➕ Ajouter un ami
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <app-friends-list 
+      *ngIf="activeTab === 'friends'"
+      [currentUserId]="currentUserId">
+    </app-friends-list>
+
+    <app-friend-requests 
+      *ngIf="activeTab === 'requests'"
+      [currentUserId]="currentUserId">
+    </app-friend-requests>
+
+    <app-add-friend 
+      *ngIf="activeTab === 'add'"
+      [currentUserId]="currentUserId">
+    </app-add-friend>
+  </div>
+</div> 

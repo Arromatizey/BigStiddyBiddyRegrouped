@@ -32,12 +32,20 @@ public class User implements UserDetails {
     @Column(name = "password_hash", nullable = false)
     private String password;
 
+    @Column(name = "display_name")
     private String displayName;
+    
+    @Column(name = "avatar_url")
     private String avatarUrl;
+    
+    @Column(nullable = false)
     private boolean verified = false;
 
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
+
+    @Column(name = "last_seen_at")
+    private Instant lastSeenAt = Instant.now();
 
     // UserDetails implementation methods
     @Override
@@ -73,5 +81,11 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return password;
+    }
+
+    // Helper method to check if user is online (last seen within 5 minutes)
+    public boolean isOnline() {
+        if (lastSeenAt == null) return false;
+        return Instant.now().minusSeconds(300).isBefore(lastSeenAt);
     }
 }

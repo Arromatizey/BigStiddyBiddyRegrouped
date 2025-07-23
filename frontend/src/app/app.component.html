@@ -1,9 +1,18 @@
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content below * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced. * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * End of Placeholder * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<div class="app-container">
+  <!-- Navigation Bar -->
+  <nav class="navbar" *ngIf="isLoggedIn">
+    <div class="nav-brand">
+      <a routerLink="/" class="brand-link">📚 StudyBuddy</a>
+    </div>
+    <div class="nav-links">
+      <a routerLink="/rooms" routerLinkActive="active" class="nav-link">🏠 Rooms</a>
+      <a routerLink="/friends" routerLinkActive="active" class="nav-link">🤝 Amis</a>
+      <button class="logout-btn" (click)="logout()">🚪 Déconnexion</button>
+    </div>
+  </nav>
 
-<router-outlet></router-outlet> 
+  <!-- Main Content -->
+  <main class="main-content" [class.with-nav]="isLoggedIn">
+    <router-outlet></router-outlet>
+  </main>
+</div> 

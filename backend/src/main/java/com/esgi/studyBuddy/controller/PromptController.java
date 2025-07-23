@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 
 @RestController
 @RequestMapping("/api/prompts")
+@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class PromptController {
     private final PromptService promptService;

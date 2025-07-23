@@ -1,0 +1,121 @@
+<div class="friend-requests">
+  <div class="requests-header">
+    <h2>📬 Demandes d'amitié</h2>
+    <button class="refresh-btn" (click)="refresh()" [disabled]="loading">
+      🔄 Actualiser
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement des demandes...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error">
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="refresh()">Réessayer</button>
+  </div>
+
+  <!-- Content when not loading -->
+  <div *ngIf="!loading && !error" class="requests-content">
+    
+    <!-- Pending Requests (Received) -->
+    <div class="requests-section">
+      <h3>📥 Demandes reçues ({{ pendingRequests.length }})</h3>
+      
+      <div *ngIf="pendingRequests.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>Aucune demande d'amitié en attente</p>
+      </div>
+
+      <div *ngIf="pendingRequests.length > 0" class="requests-list">
+        <div 
+          *ngFor="let request of pendingRequests; trackBy: trackByRequestId" 
+          class="request-card received">
+          
+          <!-- Avatar -->
+          <div class="request-avatar">
+            <img 
+              *ngIf="request.requester.avatarUrl" 
+              [src]="request.requester.avatarUrl" 
+              [alt]="request.requester.displayName || request.requester.email"
+              class="avatar-img">
+            <div 
+              *ngIf="!request.requester.avatarUrl" 
+              class="avatar-placeholder">
+              {{ getUserInitials(request.requester.displayName, request.requester.email) }}
+            </div>
+          </div>
+
+          <!-- Request Info -->
+          <div class="request-info">
+            <h4 class="requester-name">{{ request.requester.displayName || request.requester.email }}</h4>
+            <p class="requester-email" *ngIf="request.requester.displayName">{{ request.requester.email }}</p>
+            <p class="request-time">{{ getRequestAge(request.createdAt) }}</p>
+          </div>
+
+          <!-- Actions -->
+          <div class="request-actions">
+            <button 
+              class="action-btn accept-btn" 
+              (click)="acceptRequest(request)"
+              [disabled]="isProcessing(request.requesterId)"
+              title="Accepter la demande">
+              <span *ngIf="!isProcessing(request.requesterId)">✅</span>
+              <span *ngIf="isProcessing(request.requesterId)" class="mini-spinner"></span>
+            </button>
+            <button 
+              class="action-btn reject-btn" 
+              (click)="rejectRequest(request)"
+              [disabled]="isProcessing(request.requesterId)"
+              title="Refuser la demande">
+              <span *ngIf="!isProcessing(request.requesterId)">❌</span>
+              <span *ngIf="isProcessing(request.requesterId)" class="mini-spinner"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sent Requests -->
+    <div class="requests-section" *ngIf="sentRequests.length > 0">
+      <h3>📤 Demandes envoyées ({{ sentRequests.length }})</h3>
+      
+      <div class="requests-list">
+        <div 
+          *ngFor="let request of sentRequests; trackBy: trackByRequestId" 
+          class="request-card sent">
+          
+          <!-- Avatar -->
+          <div class="request-avatar">
+            <img 
+              *ngIf="request.target.avatarUrl" 
+              [src]="request.target.avatarUrl" 
+              [alt]="request.target.displayName || request.target.email"
+              class="avatar-img">
+            <div 
+              *ngIf="!request.target.avatarUrl" 
+              class="avatar-placeholder">
+              {{ getUserInitials(request.target.displayName, request.target.email) }}
+            </div>
+          </div>
+
+          <!-- Request Info -->
+          <div class="request-info">
+            <h4 class="requester-name">{{ request.target.displayName || request.target.email }}</h4>
+            <p class="requester-email" *ngIf="request.target.displayName">{{ request.target.email }}</p>
+            <p class="request-time">Envoyée {{ getRequestAge(request.createdAt) }}</p>
+          </div>
+
+          <!-- Status -->
+          <div class="request-status">
+            <span class="status-badge pending">⏳ En attente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div> 

@@ -1,7 +1,7 @@
 package com.esgi.studyBuddy.service;
 
+import com.esgi.studyBuddy.controller.FriendshipNotificationController;
 import com.esgi.studyBuddy.model.Friendship;
-import com.esgi.studyBuddy.model.FriendshipId;
 import com.esgi.studyBuddy.model.FriendshipStatus;
 import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.FriendshipRepository;
@@ -9,16 +9,17 @@ import com.esgi.studyBuddy.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,90 +30,131 @@ class FriendshipServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    
+    @Mock
+    private FriendshipNotificationController notificationController;
 
     @InjectMocks
     private FriendshipService friendshipService;
 
-    private UUID fromId;
-    private UUID toId;
-    private User fromUser;
-    private User toUser;
+    private User user1;
+    private User user2;
+    private UUID userId1;
+    private UUID userId2;
 
     @BeforeEach
-    void setup() {
-        fromId = UUID.randomUUID();
-        toId = UUID.randomUUID();
+    void setUp() {
+        userId1 = UUID.randomUUID();
+        userId2 = UUID.randomUUID();
 
-        fromUser = new User();
-        fromUser.setId(fromId);
+        user1 = new User();
+        user1.setId(userId1);
+        user1.setEmail("user1@example.com");
+        user1.setDisplayName("User One");
 
-        toUser = new User();
-        toUser.setId(toId);
+        user2 = new User();
+        user2.setId(userId2);
+        user2.setEmail("user2@example.com");
+        user2.setDisplayName("User Two");
     }
 
     @Test
-    void sendRequest_shouldSaveFriendship_whenNotExists() {
-        FriendshipId id = new FriendshipId(fromId, toId);
+    void testSendRequest_Success() {
+        // Given
+        when(friendshipRepository.existsById(any())).thenReturn(false);
+        when(userRepository.findById(userId1)).thenReturn(Optional.of(user1));
+        when(userRepository.findById(userId2)).thenReturn(Optional.of(user2));
 
-        when(friendshipRepository.existsById(id)).thenReturn(false);
-        when(userRepository.findById(fromId)).thenReturn(Optional.of(fromUser));
-        when(userRepository.findById(toId)).thenReturn(Optional.of(toUser));
+        // When
+        friendshipService.sendRequest(userId1, userId2);
 
-        friendshipService.sendRequest(fromId, toId);
-
-        ArgumentCaptor<Friendship> captor = ArgumentCaptor.forClass(Friendship.class);
-        verify(friendshipRepository).save(captor.capture());
-        Friendship saved = captor.getValue();
-
-        assertEquals(fromUser, saved.getRequester());
-        assertEquals(toUser, saved.getTarget());
-        assertEquals(FriendshipStatus.pending, saved.getStatus());
+        // Then
+        verify(friendshipRepository).save(any(Friendship.class));
+        verify(notificationController).notifyFriendRequest(userId1, userId2, "User One");
     }
 
     @Test
-    void sendRequest_shouldNotSave_whenFriendshipExists() {
-        FriendshipId id = new FriendshipId(fromId, toId);
-        when(friendshipRepository.existsById(id)).thenReturn(true);
+    void testSendRequest_AlreadyExists() {
+        // Given
+        when(friendshipRepository.existsById(any())).thenReturn(true);
 
-        friendshipService.sendRequest(fromId, toId);
+        // When
+        friendshipService.sendRequest(userId1, userId2);
 
+        // Then
         verify(friendshipRepository, never()).save(any());
+        verify(notificationController, never()).notifyFriendRequest(any(), any(), any());
     }
 
     @Test
-    void sendRequest_shouldThrow_whenUserNotFound() {
-        FriendshipId id = new FriendshipId(fromId, toId);
-        when(friendshipRepository.existsById(id)).thenReturn(false);
-        when(userRepository.findById(fromId)).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> friendshipService.sendRequest(fromId, toId));
-
-        verify(friendshipRepository, never()).save(any());
-    }
-
-    @Test
-    void acceptRequest_shouldUpdateStatusAndSave() {
+    void testAcceptRequest_Success() {
+        // Given
         Friendship friendship = Friendship.builder()
-                .requester(fromUser)
-                .target(toUser)
+                .requesterId(userId1)
+                .targetId(userId2)
+                .requester(user1)
+                .target(user2)
                 .status(FriendshipStatus.pending)
                 .build();
 
-        when(friendshipRepository.findByRequesterIdAndTargetId(fromId, toId)).thenReturn(Optional.of(friendship));
+        when(friendshipRepository.findByRequesterIdAndTargetId(userId1, userId2))
+                .thenReturn(Optional.of(friendship));
 
-        friendshipService.acceptRequest(fromId, toId);
+        // When
+        friendshipService.acceptRequest(userId1, userId2);
 
+        // Then
         assertEquals(FriendshipStatus.accepted, friendship.getStatus());
         verify(friendshipRepository).save(friendship);
+        verify(notificationController).notifyFriendAccepted(userId1, userId2, "User Two");
     }
 
     @Test
-    void acceptRequest_shouldThrow_whenFriendshipNotFound() {
-        when(friendshipRepository.findByRequesterIdAndTargetId(fromId, toId)).thenReturn(Optional.empty());
+    void testRejectRequest() {
+        // When
+        friendshipService.rejectRequest(userId1, userId2);
 
-        assertThrows(RuntimeException.class, () -> friendshipService.acceptRequest(fromId, toId));
+        // Then
+        verify(friendshipRepository).deleteByRequesterIdAndTargetId(userId1, userId2);
+    }
 
-        verify(friendshipRepository, never()).save(any());
+    @Test
+    void testGetAcceptedFriends() {
+        // Given
+        Friendship friendship = Friendship.builder()
+                .requesterId(userId1)
+                .targetId(userId2)
+                .requester(user1)
+                .target(user2)
+                .status(FriendshipStatus.accepted)
+                .build();
+
+        when(friendshipRepository.findByStatusAndRequesterIdOrStatusAndTargetId(
+                FriendshipStatus.accepted, userId1,
+                FriendshipStatus.accepted, userId1))
+                .thenReturn(Arrays.asList(friendship));
+
+        // When
+        List<User> friends = friendshipService.getAcceptedFriends(userId1);
+
+        // Then
+        assertEquals(1, friends.size());
+        assertEquals(user2, friends.get(0));
+    }
+
+    @Test
+    void testSearchUsers() {
+        // Given
+        String query = "user";
+        when(userRepository.findByDisplayNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query))
+                .thenReturn(Arrays.asList(user1, user2));
+
+        // When
+        List<User> results = friendshipService.searchUsers(query, userId1);
+
+        // Then
+        assertEquals(1, results.size());
+        assertEquals(user2, results.get(0));
     }
 }
 

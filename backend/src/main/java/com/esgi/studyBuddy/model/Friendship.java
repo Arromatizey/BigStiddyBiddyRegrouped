@@ -19,9 +19,11 @@ import java.util.UUID;
 @IdClass(FriendshipId.class)
 public class Friendship {
     @Id
+    @Column(name = "requester_id")
     private UUID requesterId;
 
     @Id
+    @Column(name = "target_id")
     private UUID targetId;
 
     @ManyToOne
@@ -39,5 +41,6 @@ public class Friendship {
     private FriendshipStatus status = FriendshipStatus.pending;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private Instant createdAt;
 }

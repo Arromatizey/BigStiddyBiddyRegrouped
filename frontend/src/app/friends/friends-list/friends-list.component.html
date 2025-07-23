@@ -1,0 +1,72 @@
+<div class="friends-list">
+  <div class="friends-header">
+    <h2>👥 Mes Amis ({{ friends.length }})</h2>
+    <button class="refresh-btn" (click)="refresh()" [disabled]="loading">
+      🔄 Actualiser
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement des amis...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error">
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="refresh()">Réessayer</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && friends.length === 0" class="empty-state">
+    <div class="empty-icon">😔</div>
+    <h3>Aucun ami pour le moment</h3>
+    <p>Commencez par ajouter des amis pour voir qui est en ligne !</p>
+  </div>
+
+  <!-- Friends List -->
+  <div *ngIf="!loading && !error && friends.length > 0" class="friends-grid">
+    <div 
+      *ngFor="let friend of friends; trackBy: trackByFriendId" 
+      class="friend-card"
+      [class.online]="isOnline(friend.id)">
+      
+      <!-- Avatar -->
+      <div class="friend-avatar">
+        <img 
+          *ngIf="friend.avatarUrl" 
+          [src]="friend.avatarUrl" 
+          [alt]="friend.displayName || friend.email"
+          class="avatar-img">
+        <div 
+          *ngIf="!friend.avatarUrl" 
+          class="avatar-placeholder">
+          {{ getUserInitials(friend.displayName || friend.email) }}
+        </div>
+        <div class="online-indicator" [class.online]="isOnline(friend.id)"></div>
+      </div>
+
+      <!-- Friend Info -->
+      <div class="friend-info">
+        <h3 class="friend-name">{{ friend.displayName || friend.email }}</h3>
+        <p class="friend-email" *ngIf="friend.displayName">{{ friend.email }}</p>
+        <div class="status-info">
+          <span class="status-text" [class.online]="isOnline(friend.id)">
+            {{ getLastSeenText(friend) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="friend-actions">
+        <button class="action-btn message-btn" title="Envoyer un message">
+          💬
+        </button>
+        <button class="action-btn profile-btn" title="Voir le profil">
+          👤
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -17,12 +17,20 @@ export class AuthService {
   public token$ = this.tokenSubject.asObservable();
   public userId$ = this.userIdSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
-    console.log('🔧 AuthService constructor:');
-    console.log('💾 Initial localStorage token:', localStorage.getItem('token'));
-    console.log('💾 Initial localStorage userId:', localStorage.getItem('userId'));
-    console.log('🔑 Initial tokenSubject value:', this.tokenSubject.value);
-    console.log('🆔 Initial userIdSubject value:', this.userIdSubject.value);
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
+    // Ensure subjects are initialized with stored values
+    const storedToken = localStorage.getItem('token');
+    const storedUserId = localStorage.getItem('userId');
+    
+    if (storedToken) {
+      this.tokenSubject.next(storedToken);
+    }
+    if (storedUserId) {
+      this.userIdSubject.next(storedUserId);
+    }
   }
 
   register(request: RegisterRequest): Observable<string> {
@@ -71,10 +79,12 @@ export class AuthService {
   }
 
   getCurrentUserId(): string | null {
-    return this.userIdSubject.value;
+    const userId = this.userIdSubject.value || localStorage.getItem('userId');
+    return userId;
   }
 
   getToken(): string | null {
-    return this.tokenSubject.value;
+    const token = this.tokenSubject.value || localStorage.getItem('token');
+    return token;
   }
 }

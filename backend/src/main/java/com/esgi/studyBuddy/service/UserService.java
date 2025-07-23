@@ -1,20 +1,25 @@
 package com.esgi.studyBuddy.service;
 
 import com.esgi.studyBuddy.DTO.UserUpdateRequest;
+import com.esgi.studyBuddy.controller.FriendshipNotificationController;
 import com.esgi.studyBuddy.model.User;
 import com.esgi.studyBuddy.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
+    private final FriendshipNotificationController notificationController;
 
     public User getUserById(UUID id) {
         return userRepository.findById(id)
@@ -55,6 +60,21 @@ public class UserService {
         }
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateLastSeen(UUID userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            boolean wasOffline = !user.isOnline();
+            user.setLastSeenAt(Instant.now());
+            userRepository.save(user);
+            
+            // Notify online status change if user came back online
+            if (wasOffline) {
+                log.info("📡 User {} is now online", userId);
+                notificationController.notifyOnlineStatusChange(userId, true);
+            }
+        });
     }
 
 }

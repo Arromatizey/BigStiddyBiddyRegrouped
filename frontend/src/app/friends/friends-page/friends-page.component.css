@@ -1,0 +1,96 @@
+.friends-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.friends-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.friends-header h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.friends-header p {
+  margin: 0;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.tabs-navigation {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 10px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: #f8f9fa;
+  color: #666;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.tab-button.active {
+  background: #007bff;
+  color: white;
+  border-bottom-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .friends-page {
+    padding: 15px;
+  }
+  
+  .tabs-navigation {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .tab-button {
+    border-radius: 8px;
+    border-bottom: none;
+  }
+  
+  .tab-button.active {
+    transform: none;
+    border-left: 4px solid #0056b3;
+  }
+} 
